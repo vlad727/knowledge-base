@@ -1,0 +1,25 @@
+mv cluster-role-prometheus.yaml _cluster-role-prometheus.yaml ### how to ignore some templates 
+
+example with conditions
+values:
+test_install: true
+test_install1: false
+
+
+helm with "if" "and" "else if" and "not" 
+{{- if and .Values.test_install  .Values.test_install1 }}
+Both values is true
+{{- else if not  .Values.test_install }}
+test_install is not true
+{{- else if not .Values.test_isntall1 }}
+test_install1 is not true
+{{- end }}
+
+description:
+{{ if <PIPELINE> }}
+    # If true will execute
+{{ else if <next Pipeline> }}
+    # If false and else true will execute
+{{ else }}
+    # default execution
+{{ end }}
