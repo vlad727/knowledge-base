@@ -1,0 +1,33 @@
+sudo useradd -r -M -s /bin/false node_exporter
+tar -zxpvf node_exporter-1.0.1.linux-amd64.tar.gz
+cd node_exporter-1.0.1.linux-amd64
+sudo cp node_exporter /usr/local/bin
+sudo chown node_exporter:node_exporter /usr/local/bin/node_exporter
+
+### Create Systemd unit ###
+
+sudo nano /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Prometheus Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target
+
+### Start daemon ### 
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now node_exporter
+sudo systemctl status node_exporter
+
+### Firewalld settings ####
+
+sudo firewall-cmd --add-port=9100/tcp  --permanent
+sudo firewall-cmd --reload
