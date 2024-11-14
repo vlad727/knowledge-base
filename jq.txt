@@ -1,0 +1,13 @@
+https://runebook.dev/ru/docs/jq/
+### how to get key and value from VirtualEntry
+NAMESPACES=$(oc get ns | awk 'NR!=1' | awk '{print $1}') ### get list of namespaces 
+for i in $NAMESPACES; do oc get VirtualServices -n $i -o json | jq '.items[] |  .metadata.namespace, .metadata.name, .spec.exportTo '; done
+### .items[] all index in array 
+### .items[0] first index in array 
+### | pipe like in shell 
+### , comma helps to get multiple values
+
+### if value for ExportTo != ["."] export values for .metadata.namespace and  .metadata.name ###
+NAMESPACES=$(oc get ns | awk 'NR!=1' | awk '{print $1}')
+for i in $NAMESPACES; do oc get destinationrules -n $i -o json | jq '.items[] | select(.spec.exportTo != ["."] )| .metadata.namespace, .metadata.name'
+### result, output with namespaces name and destinationrules name, also * and null ### .items[] all items in array 
