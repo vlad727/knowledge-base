@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-deploy
+spec:
+  selector:
+    matchLabels:
+      app: audit-app
+  template:
+    metadata:
+      labels:
+        app: audit-app
+    spec:
+      containers:
+      - name: audit-app
+        image: <image>
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /config
+          name: audit
+      volumes:
+      - name: audit
+        hostPath:
+          path: /etc/kubernetes/manifests/
+      tolerations:
+        - effect: NoExecute
+          operator: Exists
+      nodeName: <node-name> 
+       
+  
