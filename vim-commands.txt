@@ -1,0 +1,2 @@
+ggVG selects all content. gg moves to first line. V starts visual mode. G jumps to last line ### select all text
+Vim Ctrl+v ### VISUAL BLOCK allow you select colums  
