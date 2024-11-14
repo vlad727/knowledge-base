@@ -1,0 +1,55 @@
+curl -I # get only status code
+curl -O http://ftp.gnu.org/gnu/wget/wget-1.15.tar.gz # download files
+curl -v telnet://127.0.0.1:22 # check port 22  response result if it open and works "Connected to 127.0.0.1 (127.0.0.1) port 22 (#0) and  SSH-2 OpenSSH_7.9" or  closed "Connection refused"
+curl  -u admin:12345 --basic http://127.0.0.1:808 ### get with basic authorization 
+
+example:
+curl 10.0.0.1:12345
+We can expect one of the following three different outcomes:
+
+If curl exits immediately with the error
+curl: (7) Failed to connect to 10.0.0.1 port 12345: Connection refused
+then we know that the port is closed and no application is listening on it.
+
+If curl exits immediately without any error, or with an error such as
+curl: (52) Empty reply from server
+then we know that an application accepted the connection from curl, and either sent some content back to curl, or was confused by what curl sent it and closed the connection. In either case, we know the port is open with something listening on it.
+
+If curl hangs for a few minutes (typically 3 minutes) and then exits with
+curl: (7) Failed to connect to 10.0.0.1 port 12345: Connection timed out
+then we know that the port is not reachable from where we are running curl. This is most likely because of a firewall rule silently blocking our connection attempts, or perhaps a routing problem. In this case, we cannot determine the status of the port because we cannot even reach it.
+
+### get hostname from curl ###
+curl -v --silent syn-data-plane-01.apps.k8s.<fqdn> 2>&1 | grep "Host"
+
+
+### curl with header ###
+Если у вас есть балансировщик нагрузки и расположенные за ним бэкенды с рядом виртуальных хостов и вы хотите обратиться к определенному бэкенду и определенному виртуальному хосту, то у вас могут возникнуть небольшие трудности.
+
+Основная проблема в том, что если вы обратитесь к domain.tld, то попадете на балансировщик нагрузки и затем будете направлены на случайный бэкенд. Но мы хотим подключиться к определенному серверу напрямую, поэтому требуется использовать его IP-адрес. Например, так:
+
+curl 'http://10.1.2.28:81/'
+Однако из-за того, что серверы используют виртуальные хосты основанные на доменных именах, то в ответ мы получим ошибку 404. Трюк в том, чтобы передавать заголовок Host:
+
+curl --header 'Host: domain.tld' 'http://10.1.2.28:81/'
+Это позволит нам запросить нужный виртуальный хост на нужном бэкенде.
+########################
+
+### get deployments in namespace default with header application/yaml
+### output will be in yaml
+curl https://api.<fqdn>:6443/apis/apps/v1/namespaces/default/deployments --cacert ca.crt --cer tls.crt --key tls.key -X GET --header 'Accept: application/yaml'
+
+### Клиент может передавать параметры выполнения запроса в URI целевого ресурса после символа «?»:
+### Знак вопроса отделяет адрес от передаваемых данных
+GET /path/resource?param1=value1&param2=value2 HTTP/1.1
+
+### example below provides only one istiooperator in yaml format
+curl https://api.<fqdn>/apis/install.istio.io/v1alpha1/istiooperators?limit=1 \
+--cacert ca.crt --cert tls.crt --key tls.key -X GET --header 'Accept: application/yaml'
+
+### kind table example
+https://kubernetes.io/docs/reference/using-api/api-concepts/#receiving-resources-as-tables
+curl https://api.<your-fqdn>:6443/apis/install.istio.io/v1alpha1/istiooperators?limit=1 \
+--cacert ca.crt --cert tls.crt --key tls.key -X GET --header 'Accept: application/json;as=Table;g=meta.k8s.io;v=v1'
+### accept and content type json
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" http://hostname/resource
