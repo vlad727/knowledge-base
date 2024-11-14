@@ -1,0 +1,41 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    meta.helm.sh/release-name: crb
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2024-07-02T08:30:58Z"
+  generation: 3
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: manager-crb
+  resourceVersion: "6388733"
+  uid: 05762443-c61c-4d5a-b3fb-319b1d323fa5
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUROekNDQWgrZ0F3SUJBZ0lVVlYxM1RsUWNHcDZaQk9jYkNwbHovdXl4MnJjd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0t6RUxNQWtHQTFVRUJoTUNRVlV4SERBYUJnTlZCQU1NRTIxaGJtRm5aWEl0WTNKaUxYTmxjblpwWTJVdwpIaGNOTWpRd05qSTRNVE0xT0RBeFdoY05NalV3TmpJNE1UTTFPREF4V2pBck1Rc3dDUVlEVlFRR0V3SkJWVEVjCk1Cb0dBMVVFQXd3VGJXRnVZV2RsY2kxamNtSXRjMlZ5ZG1salpUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQUQKZ2dFUEFEQ0NBUW9DZ2dFQkFPY0VtZWdSZVhCRHc1TUxCZmNGdXlYaTFOQzJnTlhKRFlTYkhOWlAvT3g0dWU4dgpxNEF6ZFlkK2tWYkVLaWlaZzg2bmtLS1hjRmFuVkw2TWdDekFreHdIcnVhSHVLSkZxTG5aUEVtdG02dXAwaVkxCkN3N2dwOXVaaXB2SGYvcWtqeUJXN2ZiRCtwZmNHQ0RsV3ZMbXROTFBRZDlpN2UxQTlsenppMzYrRXFzNmpncTQKeTREWUVwMWhuMTNVd25rM09nSkFnV0pxL3daVEtFZ2x4bERQbzU3Y0xJT2pBc2RqMUo5T3J1dEpLSUhEOFdhVwpUeE5USjB4ekpyZ09JRm5rZWpVb09VL2ZaaUV5RFRTVXVFVXlzdXdLaU9ka0Rpc0ZSdlp4M1NRLy9vYVBoV0NlCmg0YjBRUlJDYUlpZWhzNkhDSTdUQXZyd0c1MnFNaDh3aHQvRFZBTUNBd0VBQWFOVE1GRXdIUVlEVlIwT0JCWUUKRkE3czZya0VMT3ZKRlViZnpFVkhqcjZtMUFMc01COEdBMVVkSXdRWU1CYUFGQTdzNnJrRUxPdkpGVWJmekVWSApqcjZtMUFMc01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFDUnl0SGpHCkNwMDN2N2laMjhkT21ZcTh6VTRsY2oxcXJBR1NCMk9yYjQwY3lKRi8xcXdjcU9XcWRlMEUvZEVCc0diVUk3UlgKUTlpalFhUStLa1NaTFVaa1BSTnBWNnJBdjBpSjdVaUgzMElBdjJ2YzAwbE1EY0VkM2YvTU5rT21SWHNQWEN3VgpSb2dsR1R4dXRveVVRcEF2SEMzTmcvYnU5SWo0QVhJbFBidml5UUZPUllkbE9aVTlkTnpvM1oyU25BWmpkb2pFCjFObnNxdXBnbUFlY0hFMTBhNEZUM2E1aXM3SmJnWHVTQ3lZMks2K0k5N3FVeWJuRVJFMVpJSmc0Qngyd3YxNnMKcWtYS0F1NWF6NkRJSkd0cnFpVit2UXF4TUxoU3hhdmE1SXB4UEtQRnFBTElQZWhISkpJeDRoVVNNTzdadjljWApSMG5kdjhFSW1RQ251eW89Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    service:
+      name: manager-crb-service
+      namespace: manager-crb
+      path: /validate
+      port: 443
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: manager-crb.creator.webhook
+  namespaceSelector: {}
+  objectSelector: {}
+  rules:
+  - apiGroups:
+    - '*'
+    apiVersions:
+    - '*'
+    operations:
+    - '*'
+    resources:
+    - clusterrolebindings
+    scope: Cluster
+  sideEffects: None
+  timeoutSeconds: 5
