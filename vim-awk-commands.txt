@@ -1,0 +1,12 @@
+ggVG selects all content. gg moves to first line. V starts visual mode. G jumps to last line ### select all text
+Vim Ctrl+v ### VISUAL BLOCK allow you select colums  
+
+awk 'NR!=1' ### to get 1 column without firs line 
+oc get ns | awk 'NR!=1' | awk  '{print $1}' 
+%s/^[ \t]//g ### To remove all whitespace (including tabs) from left to first word, enter:
+awk 'NR!=1 {print  $1}' ### NR number records and operator !=1 
+kubectl cluster-info | head -1 | awk '{print $7}' | sed -e 's/https:\/\/api\.//g;s/:6443//g' ### replace two or more values with sed 
+grep -B2 ### 2 string before match  
+grep -A2 ### 2 strings after match
+kubectl get ns | awk '/test/ {print $1}' ### example search pattern "test" and print first column 
+sed -i ''   's/\"kubernetes\"//' tmp.json ### The option -i in the sed command modifies the actual sample.txt file ### '' for macos "undefined label"
