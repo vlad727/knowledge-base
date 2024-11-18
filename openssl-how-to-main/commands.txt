@@ -1,0 +1,13 @@
+### generate certificate 
+openssl req -x509 -sha256 -newkey rsa:4096 -keyout ca.key -out ca.crt -days 356 -nodes -subj '/CN=Health Certificate Authority'
+openssl req -new -newkey rsa:4096 -keyout server.key -out server.csr -nodes -subj '/CN=*.orthweb.com'
+openssl x509 -req -sha256 -days 365 -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt
+
+### result 
+ca.crt ca.key server.crt server.key
+
+### get info about certificate
+openssl x509 -in server.crt -text | grep -e  'Issuer:\|Subject:' -e 'Not'
+
+### get cert with kubectl 
+kubectl get secrets istio-ingressgateway-certs   -n <your-ns>  -o json | jq  '.data."tls.crt"' | sed -e 's/"//g' | base64 -D > tls.crt
