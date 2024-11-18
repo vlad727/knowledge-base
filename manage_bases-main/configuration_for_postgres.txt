@@ -1,0 +1,26 @@
+https://www.bigbinary.com/blog/configure-postgresql-to-allow-remote-connection
+sudo yum install postgresql-server.x86_64 -y
+sudo postgresql-setup initdb
+sudo systemctl start  postgresql
+sudo systemctl status   postgresql
+sudo systemctl enable    postgresql
+
+### need to edit /var/lib/pgsql/data/postgresql.conf  to allow remoute connection ###
+### change listen addres to  listen_addresses = '0.0.0.0' or listen_addresses = '*' 
+
+### set password for user postgres ###
+### sudo -u postgres psql
+### postgres=# \password postgres
+### Enter new password: <new-password>
+### postgres=# \q
+
+### configuring pg_hba.conf ###
+### host    all             all              0.0.0.0/0                       md5
+### host    all             all              ::/0                            md5
+### Do not get confused by "md5" option mentioned above. All it means is that a password needs to be provided. If you want client to allow collection without providing any password then change "md5" to "trust" and that will allow connection unconditionally.
+
+### docker image with psql ###
+docker pull governmentpaas/psql
+docker  run -d 53add01170eb sleep 300
+docker exec -ti c30cfa8bf549 /bin/sh
+psql -h <ip hostt with posgres> -U postgres
