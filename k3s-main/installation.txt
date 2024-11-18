@@ -1,0 +1,15 @@
+#https://github.com/BigKAA/youtube/tree/master/k3s
+### Create first master ###
+# Run it on firts master node master1.loc
+curl -sfL https://get.k3s.io | K3S_TOKEN='l%TH]c4VvCT<Xj{' sh -s - server --cluster-init
+# Provide access to file kubeconfig (if want manage cluster from master1 if not copy it on local machine)
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+# To add another masters need to update file hosts
+# like below
+192.168.82.17 master1.loc
+192.168.82.18 master2.loc
+192.168.82.19 master3.loc
+### Create second and third masters
+# run in on master2 and master3
+curl -sfL https://get.k3s.io | K3S_TOKEN='l%TH]c4VvCT<Xj{' sh -s - server --server https://master1.loc:6443
+

@@ -1,0 +1,28 @@
+### Create first master ###
+# Run it on firts master node master1.loc
+curl -sfL https://get.k3s.io | K3S_TOKEN='l%TH]c4VvCT<Xj{' sh -s - server --cluster-init
+# Provide access to file kubeconfig 
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+# To add another masters need to update file hosts
+# like below
+192.168.82.17 master1.loc
+192.168.82.18 master2.loc
+192.168.82.19 master3.loc
+# Create second and third masters
+curl -sfL https://get.k3s.io | K3S_TOKEN='l%TH]c4VvCT<Xj{' sh -s - server --server https://master1.loc:6443
+
+# Create worker nodes (agent)
+# Take token from master node
+cat /var/lib/rancher/k3s/server/token
+# example token
+K105812522869523fe74e29cceb3e690d60309f895d11fd3701af551004df751dd7::server:l%TH]c4VvCT<Xj{
+# run script on worker node (agent)
+curl -sfL https://get.k3s.io | K3S_URL="https://k3sm1.kryukov.local:6443" \
+      K3S_TOKEN='K1079038baf34fd74abdb5f5cbc38018cf30b86500f7b28e0934103f23d9cfb8d89::server:l%TH]c4VvCT<Xj{' sh -
+# add ingress controller to your k3s cluster
+# https://blog.thenets.org/how-to-create-a-k3s-cluster-with-nginx-ingress-controller/
+# apply service for ingress and create test ingress 
+# if dns does not exist use record like below in your hosts file
+192.168.82.17 test-ingres.master1.loc
+
+
