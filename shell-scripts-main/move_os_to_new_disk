@@ -1,0 +1,50 @@
+### disable selinux ###
+sed -i 's/enforcing/disable/g' /etc/selinux/config
+### old disk with os is sda new disk sdb ###
+### sfdisk -d  to take a dump ###
+sfdisk -d /dev/sda > patitions.txt 
+sfdisk  /dev/sdb <  patitions.txt
+### create pv vg lv ### 
+pvcreate /dev/sdb2
+vgcreate centos1  /dev/sdb2
+lvcreate -L 1,7G -n home1 centos1
+lvcreate -L 7,3G -n root1 centos1
+### make file system ###
+mkfs.xfs /dev/sdb1 
+mkfs.xfs /dev/mapper/centos1-home1
+mkfs.xfs /dev/mapper/centos1-root1
+### create dir new and dir old ###
+copy files 
+mount /dev/sda1  /old
+mount /dev/sdb1  /new
+rsync -av /old/* /new/
+
+mount /dev/mapper/centos-root /old/
+mount /dev/mapper/centos1-root1 /new
+rsync -av /old/* /new/
+
+mount /dev/mapper/centos-home /old/
+mount /dev/mapper/centos1-home1 /new/
+rsync -av /old/* /new/
+### change fstab with new UUID and LVM's ###
+ mount /dev/mapper/centos1-root1 /new/
+ vim /new/etc/fstab
+### mount dirs for chroot ###
+mount /dev/sdb1 /new/boot
+ls /new/boot/
+lsblk -f
+mount --bind /dev /new/dev
+mount --bind /sys /new/sys
+mount --bind /proc /new/proc
+### chroot to new os ####
+chroot /new   
+[root@localhost ~]#    ### old system with name localhost
+[root@change-disk /]#  ### new system with name change-disk 
+### fix defult grub file ###
+vi /etc/default/grub
+### change grub2 ###
+grub2-mkconfig -o /boot/grub2/grub.cfg
+### install grub for new sdb disk ###
+grub2-install /dev/sdb
+### finished ####
+### try to boot from new disk ###
