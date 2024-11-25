@@ -54,3 +54,17 @@ https://learn.microsoft.com/ru-ru/troubleshoot/azure/virtual-machines/linux/trou
 
 При запуске RHEL 7/CentOS 7 GRUB 2 является загрузчиком по умолчанию. Файл конфигурации GRUB 2 —  /boot/grub2/grub.cfg. 
 Установите загрузчик grub на корневой диск. (По умолчанию: /dev/sda).
+
+Note:
+commands: 
+grub2-install /dev/sdx 
+grub2-mkconfig -o /boot/grub2/grub.cfg 
+### before use need to be sure that is your disk 
+### may be issue in future like, when you switch  off old disk and try to restart, it can't star with error "no such device"
+### the root cause for this is that command "grub2-install /dev/sdb" were for disk sdb and your disk is sda so after  command "grub2-mkconfig -o /boot/grub2/grub.cfg "
+### file grub.cfg will contain records with UUID sdb disk
+### to fix it  need to do grub2-install /dev/sda and repeat grub2-mkconfig -o /boot/grub2/grub.cfg 
+### file /etc/default/grub Данный файл содержит в себе основные настройки для GRUB.
+### Чтобы выяснить какая запись по счету нам нужна или точное название такой записи, достаточно запустить такую команду
+### grep menuentry /boot/grub/grub.cfg
+### https://uzverss.livejournal.com/16694.html
