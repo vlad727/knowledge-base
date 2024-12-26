@@ -1,0 +1,16 @@
+ if ... ; ok := ...:
+
+myMap := map[string]int{
+    "apple": 42,
+    "banana": 23,
+}
+
+value, ok := myMap["orange"]
+if !ok {
+    fmt.Println("Ключ 'orange' не найден.")
+} else {
+    fmt.Println("Значение:", value)
+}
+Теперь:
+Переменная value хранит значение, соответствующее ключу "orange".
+Переменная ok принимает значение true(bool), если ключ найден, и false, если он отсутствует.
