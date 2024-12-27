@@ -98,3 +98,42 @@ Date: Fri, 27 Dec 2024 14:03:31 GMT
 w.Header().Set("Cache-Control", "max-age=3600")
 w.Header().Set("X-Powered-By", "Golang")
 ```
+
+Пример с возвратом html и status code 
+package main
+
+import (
+	"net/http"
+	"strings"
+)
+
+func Health(w http.ResponseWriter, r *http.Request) {
+
+	userAgent := r.Header.Get("User-Agent")
+	if strings.Contains(strings.ToLower(userAgent), "curl") { // Проверяем, является ли запрос от curl
+		w.WriteHeader(http.StatusOK) // Отправляем статус 200
+		return                       // Завершаем обработку запроса
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	html := `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Check</title>
+</head>
+<body>
+    <h1>I'm OK!</h1>
+</body>
+</html>`
+	w.Write([]byte(html))
+
+}
+func main() {
+
+	porthttp := ":8080"
+	http.HandleFunc("/health", Health) // allow check health for application
+	// listen http
+	http.ListenAndServe(porthttp, nil)
+}
+
