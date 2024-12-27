@@ -1,0 +1,100 @@
+Типы ответов можно возвращать через `http.ResponseWriter`:
+
+### 1. Простые текстовые ответы
+
+Это самый базовый способ возврата информации от сервера:
+
+```go
+w.Header().Set("Content-Type", "text/plain")
+w.Write([]byte("I'm OK"))
+```
+
+Здесь вы устанавливаете заголовок `Content-Type` в значение `text/plain`, которое говорит браузеру, что данные являются простым текстом. Затем с помощью метода `Write` вы отправляете текстовую строку.
+
+### 2. HTML-страницы
+
+Для того чтобы отправить HTML-документ, необходимо установить соответствующий заголовок `Content-Type` и передать HTML-разметку:
+
+```go
+w.Header().Set("Content-Type", "text/html")
+html := `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Check</title>
+</head>
+<body>
+    <h1>I'm OK!</h1>
+</body>
+</html>`
+w.Write([]byte(html))
+```
+
+Этот пример вернет полноценную HTML-страницу, которую браузер сможет отрендерить.
+
+### 3. JSON-ответы
+
+JSON часто используется для передачи структурированных данных между сервером и клиентом. Чтобы вернуть JSON, нужно сначала сериализовать данные в JSON-формат
+затем установить заголовок `Content-Type` в `application/json` и отправить результат:
+
+```go
+data := map[string]string{"status": "I'm OK"}
+jsonData, _ := json.Marshal(data)
+
+w.Header().Set("Content-Type", "application/json")
+w.Write(jsonData)
+```
+
+### 4. XML-ответы
+
+XML тоже может использоваться для передачи данных. Аналогично JSON, нужно установить правильный заголовок и отправить сериализованные данные:
+
+```go
+xmlData := []byte(`<?xml version="1.0" encoding="UTF-8"?><message>I'm OK</message>`)
+
+w.Header().Set("Content-Type", "application/xml")
+w.Write(xmlData)
+```
+
+### 5. Файлы
+
+Вы можете отправлять файлы любого типа, будь то изображения, документы или архивы. Для этого нужно прочитать файл и отправить его содержимое вместе с правильным заголовком:
+
+```go
+file, err := os.Open("path/to/file.pdf")
+if err != nil {
+    // Обработайте ошибку
+}
+defer file.Close()
+
+fi, _ := file.Stat()
+size := fi.Size()
+
+w.Header().Set("Content-Type", "application/pdf")
+w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
+io.Copy(w, file)
+```
+
+### 6. Статус-коды
+
+Кроме содержимого, вы также можете устанавливать различные статус-коды HTTP, такие как `200 OK`, `404 Not Found`, `500 Internal Server Error` и другие. Например:
+
+```go
+// Устанавливает статус-код 200 OK
+w.WriteHeader(http.StatusOK)
+
+// Устанавливает статус-код 404 Not Found
+w.WriteHeader(http.StatusNotFound)
+```
+curl -I     http://localhost:8080/health
+HTTP/1.1 200 OK
+Date: Fri, 27 Dec 2024 14:03:31 GMT
+
+### 7. Заголовки
+
+Помимо `Content-Type`, вы можете добавлять любые другие заголовки, необходимые для вашего приложения. Например, заголовки для управления кэшированием, аутентификацией или другими аспектами взаимодействия клиента и сервера:
+
+```go
+w.Header().Set("Cache-Control", "max-age=3600")
+w.Header().Set("X-Powered-By", "Golang")
+```
