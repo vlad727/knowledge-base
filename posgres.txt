@@ -6,6 +6,19 @@
               value: postgres
             - name: POSTGRES_DB
               value: k8s-data
+
+### add data to database k8s-data
+-- init.sql
+CREATE TABLE users (
+                       id SERIAL PRIMARY KEY,
+                       username VARCHAR(50) NOT NULL,
+                       email VARCHAR(100) UNIQUE NOT NULL
+);
+
+INSERT INTO users (username, email) VALUES
+                                        ('admin', 'admin@example.com'),
+                                        ('user1', 'user1@example.com');
+
               
 ### connect to postgres (for user postgres)
 su postgres
