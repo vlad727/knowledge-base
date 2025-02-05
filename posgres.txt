@@ -1,0 +1,45 @@
+# how to set user, password and database name via env deployment
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: k8s-data
+              
+### connect to postgres (for user postgres)
+su postgres
+psql
+
+### list databases
+\l
+
+### connect to postgres another user
+psql -U user -d mydb
+
+### connect to database
+postgres=# \c k8s-data
+
+### list tables (or \dt+ more info)
+k8s-data=# \dt
+         List of relations
+ Schema | Name  | Type  |  Owner
+--------+-------+-------+----------
+ public | users | table | postgres
+(1 row)
+
+### get records from table user
+k8s-data=# SELECT id, username, email FROM users;
+ id | username |       email
+----+----------+-------------------
+  1 | admin    | admin@example.com
+  2 | user1    | user1@example.com
+(2 rows)
+
+### or get all from users
+k8s-data=# SELECT * FROM users;
+ id | username |       email
+----+----------+-------------------
+  1 | admin    | admin@example.com
+  2 | user1    | user1@example.com
+(2 rows)
