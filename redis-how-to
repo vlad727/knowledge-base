@@ -1,0 +1,143 @@
+Dockerfile
+FROM  redis
+# Устанавливаем необходимые утилиты с помощью apt
+RUN apt-get update && apt-get install -y procps net-tools curl
+RUN mkdir /var/log/redis && touch /var/log/redis/redis-server.log && chmod 777 /var/log/redis/redis-server.log
+# Dir for database already exists
+## RUN mkdir /data && chmod 777 /data
+# Copy redis config will be provided with configmap
+# COPY redis.conf /usr/local/etc/redis/redis.conf
+# will be run redis with args in deployment
+# CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]
+EXPOSE 6379
+
+
+redis.conf 
+# Общий раздел
+
+# Имя хоста, на котором будет запущен сервер Redis.
+# allow connect from another host
+bind 0.0.0.0
+
+# Порт, на котором будет прослушиваться сервер Redis.
+port 6379
+
+# Определяем режим защиты пароля. Если установлено значение 'yes', то клиент должен аутентифицироваться перед выполнением команд.
+# declare via env
+# requirepass foobared
+
+# Максимальное количество клиентов, которые могут одновременно подключаться к серверу Redis.
+maxclients 10000
+
+# Разрешить или запретить доступ извне к серверу Redis.
+# allow connect from another container
+protected-mode no
+
+# Логирование
+
+# Уровень логирования. Возможные значения: debug, verbose, notice, warning.
+loglevel notice
+
+# Путь к файлу журнала.
+logfile /var/log/redis/redis-server.log
+
+# Настройки базы данных
+
+# Идентификатор базы данных по умолчанию.
+databases 16
+
+# Время жизни ключа в секундах. Если ключ не использовался в течение указанного времени, он удаляется.
+# do not delete data
+maxmemory-policy noeviction
+
+# Лимит памяти в байтах.
+maxmemory 512mb
+
+# Кэширование
+
+# Время ожидания до истечения срока действия ключа в миллисекундах.
+expire-seconds 3600000
+
+# Частота очистки ключей.
+expire-check-percent 10
+
+# Безопасность
+
+# Ограничение числа запросов от одного клиента в секунду.
+client-output-buffer-limit normal 0 0 0
+
+# Ограничение числа запросов от одного клиента в секунду для подписчиков.
+client-output-buffer-limit pubsub 32mb 8mb 60
+
+# Ограничение числа запросов от одного клиента в секунду для подписчиков.
+client-output-buffer-limit slave 256mb 64mb 60
+
+# Сеть
+
+# Таймаут подключения в секундах.
+timeout 300
+
+# Параметры репликации
+
+# Имя мастера для реплики.
+# masterauth <masterauth_password>
+
+# IP адрес мастера для реплики.
+# masterhost <master_ip_address>
+
+# Порт мастера для реплики.
+# masterport <master_port>
+
+deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grabber-deployment
+  namespace: manager-crbc
+  labels:
+    app: grabber
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grabber
+  template:
+    metadata:
+      labels:
+        app: grabber
+    spec:
+      containers:
+        - name: grabber
+          image: your-app-container
+          ports:
+            - containerPort: 9443
+          volumeMounts:
+            - mountPath: /certs
+              name: certs
+          imagePullPolicy: Always
+        - name: redis
+          image: your-private-registry/redis:0.0.3
+          args: ["redis-server", "/redis-config/redis.conf"]
+          env:
+            - name:  REDIS_PASSWORD
+              value: redis_password
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - mountPath: /redis-config
+              name: redis-config
+          imagePullPolicy: Always
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config
+        - name: certs
+          secret:
+            secretName: grabber-webhook-tls
+      serviceAccountName: grabber
+      nodeSelector:
+        node-role.kubernetes.io/service: ""
+      tolerations:
+        - effect: NoExecute
+          key: node-role.kubernetes.io/service
