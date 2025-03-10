@@ -1,0 +1,49 @@
+Dockerfile 
+
+# Use the official MongoDB image
+FROM mongo:latest
+
+RUN apt-get update && apt-get install -y \
+    procps net-tools curl
+
+# Expose the MongoDB port
+EXPOSE 27017
+
+CMD ["mongod", "--bind_ip_all"]
+
+mongosh how to:
+
+test> show dbs
+admin      8.00 KiB
+config    12.00 KiB
+k8s-data   8.00 KiB
+local      8.00 KiB
+
+test> use k8s-data
+switched to db k8s-data
+
+k8s-data> show collections
+nssaslice
+k8s-data>
+
+db.<collection_name>.find()
+
+# get data from collection nssaslice
+k8s-data> db.nssaslice.find()
+
+k8s-data> db.nssaslice.find()
+[
+  {
+    _id: ObjectId('67ceeeebdb084cbae8747bd5'),
+    namespace: 'istio-opera',
+    service_accounts: [ 'default', 'test-sa', 'test-sa-1' ]
+  },
+  {
+    _id: ObjectId('67ceeeebdb084cbae8747bd6'),
+    namespace: 'manager-ns',
+    service_accounts: [ 'default', 'manager-ns' ]
+  },
+  {
+    _id: ObjectId('67ceeeebdb084cbae8747bd7'),
+    namespace: 'test-ns-10',
+    service_accounts: [ 'default', 'test-ns-10' ]
