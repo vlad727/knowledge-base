@@ -1,0 +1,77 @@
+Dockerfile with tunnel for n8n image
+FROM n8nio/n8n
+
+ENV N8N_SECURE_COOKIE=false
+ENV N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+ENV N8N_ENCRYPTION_KEY=type09dc
+
+ENTRYPOINT ["n8n"]
+CMD ["start", "--tunnel"]
+
+
+# How to n8n 
+
+## External access for webhooks 
+https://artemdzyuba.ru/n8n-intro/%d1%83%d1%81%d1%82%d0%b0%d0%bd%d0%be%d0%b2%d0%ba%d0%b0-%d0%b8-%d0%be%d0%b1%d0%bd%d0%be%d0%b2%d0%bb%d0%b5%d0%bd%d0%b8%d0%b5-n8n/
+First of all you need external domain name (use for it reg.ru or smt else + create A record )
+A record 
+A*→ <your external ip>
+A@→ <your external ip>
+Awww→ <your external ip>
+
+## docker compouse 
+ sudo dnf install docker-compose 
+
+## docker-copouse.yaml 
+version: "3"
+
+services:
+  traefik:
+    image: "traefik"
+    restart: always
+    command:
+      - "--api=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+    volumes:
+      - ${DATA_FOLDER}/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  n8n:
+    image: n8nio/n8n
+    restart: always
+    ports:
+      - "127.0.0.1:5678:5678"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
+      - traefik.http.routers.n8n.tls=true
+      - traefik.http.routers.n8n.entrypoints=websecure
+      - traefik.http.routers.n8n.tls.certresolver=mytlschallenge
+      - traefik.http.middlewares.n8n.headers.SSLRedirect=true
+      - traefik.http.middlewares.n8n.headers.STSSeconds=315360000
+      - traefik.http.middlewares.n8n.headers.browserXSSFilter=true
+      - traefik.http.middlewares.n8n.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.n8n.headers.forceSTSHeader=true
+      - traefik.http.middlewares.n8n.headers.SSLHost=${DOMAIN_NAME}
+      - traefik.http.middlewares.n8n.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.n8n.headers.STSPreload=true
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER
+      - N8N_BASIC_AUTH_PASSWORD
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_TUNNEL_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+    volumes:
+      - ${DATA_FOLDER}/.n8n:/home/node/.n8n
