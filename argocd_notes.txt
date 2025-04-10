@@ -140,3 +140,13 @@ The most used
 6. ApplyOutOfSyncOnly: false
 Зачем нужен: Эта опция позволяет синхронизировать только те ресурсы, которые отличаются от текущих. Однако, если у вас небольшие изменения, и вы хотите контролировать весь процесс синхронизации, лучше оставить её выключенной.
 Ваш случай: Лучше оставлять возможность полного контроля над всеми ресурсами, так как изменения могут касаться различных аспектов приложения.
+
+# About order create templates 
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ .Values.database.validatingwebhookconfiguration.name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+## annotaion argocd.argoproj.io/sync-wave: "1" allow you create resource at the end, after deploy all other resources
+
