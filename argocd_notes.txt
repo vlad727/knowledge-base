@@ -150,3 +150,6 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 ## annotaion argocd.argoproj.io/sync-wave: "1" allow you create resource at the end, after deploy all other resources
 
+- automated управляет процессом автоматической синхронизации и восстановления.
+- syncOptions настраивает поведение команды kubectl apply.
+
