@@ -224,3 +224,5 @@ db.<collection_name>.deleteOne({ field: "value" }) // удаление одно�
 db.<collection_name>.deleteMany({}) // удаление всех документов
 
 
+### count documents
+db.crbcr.countDocuments()
