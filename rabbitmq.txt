@@ -1,0 +1,2 @@
+###  rabbitmqctl commends ###
+rabbitmqctl list_queues ### list queues
