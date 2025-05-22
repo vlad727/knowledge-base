@@ -1,0 +1,49 @@
+# How to cert manager + validatingwebhookconfigurations 
+# need to update ca.crt for validatingwebhookconfigurations and tls.crt/tls.key with cert manager
+
+# Create resource certificate in target namespace
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: manager-ns-webhook-certificate
+  namespace: manager-ns
+spec:
+  secretName: manager-ns-webhook-tls
+  dnsNames:
+    - manager-ns-webhook.manager-ns.svc
+  commonName: manager-ns-webhook.manager-ns.svc
+  issuerRef:
+    name: cluster-ca
+    kind: ClusterIssuer
+
+# Add annotation for validatingwebhookconfigurations
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: "namespace-validator"
+  annotations:
+    cert-manager.io/inject-ca-from: manager-ns/manager-ns-webhook-certificate ### there are should be name for certificate!
+    argocd.argoproj.io/sync-wave: "4"
+webhooks:
+- name: "namespace-validator.manager-ns.webhook"
+  rules:
+  - apiGroups: [ "" ]
+    apiVersions: [ "v1" ]
+    operations: [ "CREATE" ]
+    resources: [ "namespaces" ]
+    scope: "Cluster"
+  clientConfig:
+    service:
+      namespace: {{ .Values.namespace.name }}
+      name: manager-ns-webhook
+      path: "/validate"
+    caBundle: ""
+  admissionReviewVersions: [ "v1", "v1beta1" ]
+  sideEffects: None
+  timeoutSeconds: 5
+# Result
+caBundle in validatingwebhookconfigurations will be filed with cert manager
+secret in your target namespace will contain ca.crt, tls.crt and tls.key 
+this will allow update cert after it expired by cert manager
