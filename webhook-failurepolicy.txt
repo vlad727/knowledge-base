@@ -1,0 +1,10 @@
+failurePolicy: Fail
+Если Webhook станет недоступен (например, сервер твоего приложения упадет), 
+попытка создать новый Namespace завершится неудачей. Пользователь получит ошибку
+Error from server (InternalError): Internal error occurred: failed calling webhook "grabber.validator.webhook": failed to call
+webhook: Post "https://grabber.manager-crbc.svc:443/grabber?timeout=5s": dial tcp 192.169.171.52:443: connect: operation not permitted
+Создание Namespace будет заблокировано до тех пор, пока Webhook снова не заработает.
+
+failurePolicy: Ignore
+Здесь ситуация кардинально отличается. Если Webhook временно недоступен, создание Namespace продолжится, даже 
+несмотря на отсутствие реакции от Webhook'а. Это значит, что другие части системы смогут продолжить работу, не дожидаясь восстановления доступности твоего сервиса.
