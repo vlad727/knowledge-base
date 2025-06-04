@@ -259,4 +259,7 @@ test> db.serverStatus().connections
   awaitingTopologyChanges: Long('6475'),
   loadBalanced: Long('0')
 }
+### get connection with kubectl 
+kubectl exec -it mongodb-6df59584d5-8rrhg -n manager-crbc -- mongo --eval 'db.serverStatus().connections'
+
 
