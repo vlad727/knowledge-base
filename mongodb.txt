@@ -293,4 +293,52 @@ Less connections when we use global (only one connection)
 }
 ----------
 
+### global(one) connection to get mongodb client
+package mongoinit
+
+import (
+	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/net/context"
+	"log"
+	"os"
+)
+
+const (
+	port = 27017 // MongoDB default port
+)
+
+var (
+	logger = log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
+	// INFO:
+	// ERROR:
+)
+
+var globalClient *mongo.Client
+
+// Exported function that returns the shared MongoDB client
+func InitMongoDB() (*mongo.Client, error) {
+	return globalClient, nil
+}
+
+func GetMongoDBClient() error {
+	host := os.Getenv("SERVICE_MONGODB")
+	uri := fmt.Sprintf("mongodb://%s:27017", host)
+	opts := options.Client().ApplyURI(uri)
+
+	client, err := mongo.Connect(context.TODO(), opts)
+	if err != nil {
+		return err
+	}
+
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		return err
+	}
+
+	globalClient = client
+	logger.Println("Connected to MongoDB successfully.")
+	return nil
+}
 
