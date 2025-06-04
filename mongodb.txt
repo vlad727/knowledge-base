@@ -244,3 +244,19 @@ import "go.mongodb.org/mongo-driver/mongo/options"
 insertOpts := options.InsertMany().SetOrdered(false)
 insertSlNSa, err := collectionslmapnssa.InsertMany(context.TODO(), docSlMapNsSa, insertOpts)
 
+### connection count 
+test> db.serverStatus().connections
+...
+{
+  current: 19427,
+  available: 819433,
+  totalCreated: 668956,
+  rejected: 0,
+  active: 6476,
+  threaded: 19427,
+  exhaustIsMaster: Long('0'),
+  exhaustHello: Long('6475'),
+  awaitingTopologyChanges: Long('6475'),
+  loadBalanced: Long('0')
+}
+
