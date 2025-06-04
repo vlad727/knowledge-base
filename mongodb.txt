@@ -262,4 +262,35 @@ test> db.serverStatus().connections
 ### get connection with kubectl 
 kubectl exec -it mongodb-6df59584d5-8rrhg -n manager-crbc -- mongo --eval 'db.serverStatus().connections'
 
+### mongodb about connections 
+Too much connections, when we create new connection every message
+----------
+{
+  current: 13456,
+  available: 825404,
+  totalCreated: 693786,
+  rejected: 0,
+  active: 4484,
+  threaded: 13456,
+  exhaustIsMaster: Long('0'),
+  exhaustHello: Long('4448'),
+  awaitingTopologyChanges: Long('4483'),
+  loadBalanced: Long('0')
+}
+----------
+Less connections when we use global (only one connection)
+{
+  current: 11,
+  available: 838849,
+  totalCreated: 180,
+  rejected: 0,
+  active: 3,
+  threaded: 11,
+  exhaustIsMaster: Long('0'),
+  exhaustHello: Long('2'),
+  awaitingTopologyChanges: Long('2'),
+  loadBalanced: Long('0')
+}
+----------
+
 
