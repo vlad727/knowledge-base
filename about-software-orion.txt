@@ -1,10 +1,49 @@
 zVirt - platform for management virtual machines (create, management, dr etc.) Zvirt replacement for VMware 
 zVirt Containers - software for management and deploy Nova Container Platform
-NeuVector - security for container env
-OpenSearch - collect logs and other data
-Velero - backups for Nova
+- NeuVector - security for container env
+- OpenSearch - collect logs and other data
+- Velero - backups for Nova, 
+- Container Runtime - Containerd
 Longhorn - system for storage data, used Nova
-Nova Universe - software for create and deploy Nova, separate virtual machine
+Nova Universe - software for create and deploy Nova, separate virtual machine, with repos
 Nova used - cilium or Calico
 zVirt Containers - allow use offline installation for Nova Container Platform 
 Nova Universe - store images and other dependences for offline installation and update Nova 
+Monitoring - grafana, alermanager, prometheus, - thanos query also - flux-cd, - gitea
+- Descheduler - for load cluster vs scheduler!!!
+1. Балансировка нагрузки: Перемещает контейнеры (pod'ы) с сильно загруженных узлов на менее нагруженные, улучшая общую производительность системы.
+2. Очистка неиспользуемых pod'ов: Удаляет устаревшие, зависшие или ненужные pod'ы, освобождая ресурсы.
+3. Корректировка несоответствий политики размещения: Проверяет соответствия требованиям политик размещения (affinity/anti-affinity), удаляя или перемещая pod'ы, нарушающие заданные правила.
+4. Поддержка отказоустойчивости: Помогает перераспределять приложения в случае отказа узла или сети, минимизируя потери доступности сервисов.
+
+CNAME - запись служит для перенаправления запросов с одного доменного имени на другое
+- StarVault - external secret storage 
+- StarVault PKI - allow you do not store secrets on nodes, needed for update and store certificates
+- StarVault OAuth - auth for Nova, support activeDirectory, Ldap
+- Prometheus Adapter - allow use users metrics  
+- Prometheus Adapter - operator with Fluentd and Fluentbit (light agent for collect logs)
+- Secrets Webhook - init contaner with secret 
+- Automation Tools (Reflector) - cpy configmap and secrets between namespaces
+- Automation Tools (Reloader) - reload pods after changed configmaps or secrets 
+
+## kube-proxy IPVS (iptables)
+### iptables - основной недостаток этого подхода — значительная нагрузка на CPU и медленная работа при большом количестве сервисов и подключений.
+Режим IPVS (IP Virtual Server) — это один из режимов работы компонента kube-proxy в Kubernetes. Этот режим обеспечивает высокоэффективную балансировку сетевого трафика внутри кластера Kubernetes путем прямого изменения таблицы маршрутизации Linux
+При работе в режиме IPVS kube-proxy выполняет следующие шаги:
+
+1. Создает записи IPVS для каждого сервиса Kubernetes.
+2. Настраивает балансировщик таким образом, чтобы пакеты направлялись непосредственно на конкретные Pods (работающие экземпляры контейнеров), минуя дополнительные слои обработки в пространстве пользователя.
+3. Реализует быстрый выбор целевых Pod’ов на основе настроенной политики балансировки.
+
+Этот подход существенно снижает задержки и повышает общее быстродействие сетевого взаимодействия внутри кластера.
+IPVS ядро Linux должно поддерживать соответствующие модули (обычно это доступно начиная с версий ядра >= 4.19).
+IPVS support - Round-Robin, Least Connections etc.
+
+## Nodes 
+control-plane — мастер-узлы, обеспечивающие работу управляющих компонентов Kubernetes и платформенных сервисов Nova. Отвечают за планирование, оркестрацию и общее управление кластером.
+infra — инфраструктурные узлы, предназначенные для размещения служебных компонентов платформы (например, мониторинг, авторизация, телеметрия).
+ingress — узлы, выделенные под обработку входящего сетевого трафика. Включают Ingress-контроллер (по умолчанию — Nginx), выполняющий маршрутизацию запросов к сервисам внутри кластера.
+worker — рабочие узлы, на которых размещаются пользовательские приложения, сервисы и любая вычислительная нагрузка.
+Установка и обновление платформы осуществляются при помощи нашей собственной утилиты — nova-ctl
+
+
