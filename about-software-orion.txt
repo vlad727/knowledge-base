@@ -1,0 +1,10 @@
+zVirt - platform for management virtual machines (create, management, dr etc.) Zvirt replacement for VMware 
+zVirt Containers - software for management and deploy Nova Container Platform
+NeuVector - security for container env
+OpenSearch - collect logs and other data
+Velero - backups for Nova
+Longhorn - system for storage data, used Nova
+Nova Universe - software for create and deploy Nova, separate virtual machine
+Nova used - cilium or Calico
+zVirt Containers - allow use offline installation for Nova Container Platform 
+Nova Universe - store images and other dependences for offline installation and update Nova 
