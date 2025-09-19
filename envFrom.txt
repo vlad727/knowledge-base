@@ -1,0 +1,23 @@
+# example how to provide some data from secret
+# part of deployment below:
+
+          name: {{ .Values.webapp.image.name }}
+          imagePullPolicy: {{ .Values.webapp.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: api-key <<< name for secret
+
+# secret example
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-key
+type: Opaque
+stringData: <<< may be "data"
+  api-key: "our-secret-key"
+                
+# via "envFrom" application can get data from "secret" you don't need to mount it, don't need create volume mount 
+# via "envFrom" all key value you can get with os.Getenv 
+# myVariable := os.Getenv("api-key")
+# echo $myVariable
+# our-secret-key
