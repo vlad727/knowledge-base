@@ -24,5 +24,3 @@ WORKDIR /app
 COPY --from=builder /app/<your-application> /app/
 RUN  chmod u+x <your-application> && mkdir /certs  /files
 CMD ["./<your-application>"]
-
-# 
