@@ -1,0 +1,28 @@
+# GitLab + Harbor + Argo-CD + Kubernetes = gitlab-ci 
+1. Create new branch dev in your project and do it default
+2. Move helm chart to gitlab ### optional, rename it to <application>-helm 
+3. Copy AppProject.yaml and Applicationset.yaml ### delete namespace merge appproject and applicationset to single file separate it "---" leave only one file with name applicationset.yaml
+4. Create gitlab-ci.yml
+
+### Dockerfile
+Add comands below:
+COPY go.mod go.sum ./
+COPY vendor/ ./vendor/
+COPY . .
+
+### Example Dockerfile
+
+FROM registry.apps.k8s.example/evelopment/alpinelinux/golang:1.24  AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+COPY vendor/ ./vendor/
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o <your-application> /app/cmd/main.go
+
+FROM registry.apps.k8s.example/development/alpine:3.22.0
+WORKDIR /app
+COPY --from=builder /app/<your-application> /app/
+RUN  chmod u+x <your-application> && mkdir /certs  /files
+CMD ["./<your-application>"]
+
+# 
