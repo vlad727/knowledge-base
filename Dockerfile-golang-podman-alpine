@@ -1,0 +1,41 @@
+FROM golang:1.24.0-alpine AS builder
+
+# Обновляем список пакетов и устанавливаем необходимые зависимости
+RUN apk add --update-cache --no-cache \
+    curl \
+    bash \
+    libc6-compat \
+    shadow \
+    sudo \
+    tar \
+    tzdata \
+    gnupg \
+    wget
+
+# Скачиваем и устанавливаем готовые бинарники Podman
+RUN mkdir -p /opt/podman
+RUN wget -qO- https://github.com/containers/podman/releases/download/v4.8.0/podman-remote-static-linux_amd64.tar.gz | tar xzvf - -C /opt/podman
+
+# Перемещаем бинарник в PATH
+RUN cp /opt/podman/bin/* /usr/local/bin/
+RUN mv /usr/local/bin/podman-remote-static-linux_amd64 /usr/local/bin/podman
+RUN chmod +x /usr/local/bin/podman
+
+# Простой пользователь (если необходим)
+RUN addgroup -S appuser && \
+    adduser -D -S -G appuser appuser && \
+    mkdir -p /home/appuser/.local/share/containers/storage && \
+    chown -R appuser:appuser /home/appuser/.local/share/containers/storage
+
+# Настроим sudo (если нужно)
+RUN echo 'root ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopassword && \
+    chmod 0440 /etc/sudoers.d/nopassword
+
+# Очищаем кэш и ненужные файлы
+RUN rm -rf /var/cache/apk/* /tmp/*
+
+# Рабочее пространство
+WORKDIR /app
+
+# Запуск точки входа
+ENTRYPOINT ["/bin/sh"]
