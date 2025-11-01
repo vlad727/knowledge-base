@@ -1,0 +1,54 @@
+stages:
+  - before-go
+  - set-image-ver-master-go
+  - set-image-ver-master
+  - set-image-ver-worker
+  - set-helm-ver
+  - build-master-image
+  - build-worker-image
+  - build-app-helm
+  - deploy-$IMAGE
+
+variables:
+  HELM_REPO: "postinstall"
+  APP_REPO: app-repo-name
+  IMAGE_MASTER: master-npd
+  IMAGE_WORKER: worker-npd
+  IMAGE_MANAGER_CRBC: application-name
+  HELM_CHART_DIR_NAME: helm-chart-name
+
+before-go:
+  stage: before-go
+  artifacts:
+    reports:
+      dotenv: build.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev"'
+  script:
+    - |
+      set +e 
+      podman login -u $HARBOR_USER -p $HARBOR_PASS $HOST_REGISTRY
+      # used "true" because tags may empty
+      # file build.env can't contain (\n)
+      TAGS=$(podman search --list-tags "$HOST_REGISTRY/$APP_REPO/$IMAGE_MANAGER_CRBC" --format "{{.Name}}:{{.Tag}}" | tr '\n' ',' | sed 's/,$//' || true)
+      echo "tags result: $TAGS"
+      echo "TAGS=$TAGS" > build.env # var should be with double comma
+
+set-image-ver-master-go:
+  stage: set-image-ver-master-go
+  dependencies: # Нужно явно указывать зависимость от previous stage
+    - before-go
+  artifacts:                       #artifacts  allow to save data after job is finished
+    reports:
+      dotenv: build.env            file with vars, this var will be shared with another jobs
+  image: $HOST_REGISTRY/golang/golang:1.24.0
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev"'
+  script:
+    - |
+      go version
+      ls -la
+      echo $TAGS
+      TAGS=1.0.0
+      go mod init notused || true
+      go run ./scripts/set-image-ver-master-go.go # run golang 
