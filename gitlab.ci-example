@@ -57,3 +57,4 @@ set-image-ver-master-go:
 # Varibles
 CI_PROJECT_NAME - project name for your applications
 '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev"' - branch name 
+Runner - it is separate process which one work on gitlab or another machine
