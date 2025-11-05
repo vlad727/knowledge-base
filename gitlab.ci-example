@@ -52,3 +52,7 @@ set-image-ver-master-go:
       TAGS=1.0.0
       go mod init notused || true
       go run ./scripts/set-image-ver-master-go.go # run golang 
+
+
+# Varibles
+CI_PROJECT_NAME - project name for your applications
