@@ -123,3 +123,46 @@ use-file:
     - cp $CI_PROJECT_DIR/config.env ./  # Вручную копируем
     - source config.env                   # Вручную загружаем переменные
     - echo $data  # Теперь доступно
+
+
+###  An example how to push var to next job ###
+1. Первая задача (get-tag-podman) собирает список тегов и записывает его в файл build.env.
+2. Файл build.env передается как артефакт следующему этапу (validate-image-ver-master).
+3. Вторая задача загружает переменные окружения из файла build.env перед выполнением скрипта.
+
+get-tag-podman:
+  stage: get-tag-podman
+  artifacts:
+    reports:
+      dotenv: build.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev"'
+  script:
+    - |
+      # set +e 
+      podman login -u $HARBOR_USER -p $HARBOR_PASS $HOST_REGISTRY
+      # used "true" because tags may empty
+      # file build.env can't contain (\n)
+      TAGS=$(podman search --list-tags "$HOST_REGISTRY/$APP_REPO/$IMAGE_MANAGER_CRBC" --format "{{.Name}}:{{.Tag}}" | tr '\n' ',' | sed 's/,$//' || true)
+      echo "Tags result: $TAGS"
+      echo "TAGS=$TAGS" > build.env # var should be with double comma
+
+validate-image-ver-master:
+  stage: validate-image-ver-master
+  dependencies: # Need specify dependence from  previous stage
+    - get-tag-podman
+  artifacts:                       # artifacts  allow to save data after job is finished
+    reports:
+      dotenv: build.env            # file with vars, this var will be shared with another jobs with dotenv.env you can push your var to container
+  image: $HOST_REGISTRY/golang/golang:1.24.0
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev"'
+  script:
+    - |
+      # go run ./scripts/set-image-ver-master-go.go "$TAGS" > build.env <<< another way to get value from previous job with args[0]
+      # source build.env # used if you use path
+      # echo "Tags before check: $TAGS"
+      go run ./scripts/set-image-ver-master-go.go #> build.env
+      echo "Tags after check $TAGS"
+      echo "TAGS=$TAGS" 
+################################################################################################
