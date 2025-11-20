@@ -1,0 +1,37 @@
+Issue:
+Daemonset won't start and failed with error crashLoopBakc
+
+Errors:
+No errors, events also does not contain any errors
+
+Root Cause:
+# Settings for daemonset below
+hostPID: true
+hostIPC: true
+hostNetwork: true
+
+and node-local-dns already bind such port
+
+Troubleshoting:
+After delete such setting I get an errors below
+"listen tcp4 :8080: bind: address already in use"
+
+Explanation:
+"hostNetwork: true" means that the pod uses the host node's network namespace directly, bypassing the virtual network provided by the cluster
+when you use such parameter you don't need service, you can do request by "node-ip:port-daemonset"
+
+#############################################################################################################################################
+  
+### About hostPID: true ###
+
+k exec -ti worker-npd-vzs5c /bin/sh     -n node-problem-detector
+before:
+/app # ps -ef
+PID   USER     TIME  COMMAND
+    1 root      0:00 ./worker-npd
+   11 root      0:00 /bin/sh
+   17 root      0:00 ps -ef
+/app #
+
+after:
+
