@@ -64,3 +64,74 @@ with prviliged true you can do:
 without privilige true
 - Без режима privileged, вы не сможете воздействовать на процессы хоста напрямую (например, завершить процесс, изменить приоритет, остановить его и т.п.).
 - Ошибки, подобные "Operation not permitted", возникнут, если вы попытаетесь вмешиваться в процессы хоста без повышения привилегий.
+
+
+#############################################################################################################################################
+Daemonset with hostPID true, hostNetwork true and hostIPC true
+such settings allow you to kill process from container, ps -ef will show you host processes 
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.worker_npd.pods.worker_npd.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.worker_npd.labels.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.worker_npd.labels.name }}
+    spec:
+      containers:
+        - name: {{ .Values.worker_npd.pods.worker_npd.name }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8088
+              name: http
+          securityContext:
+            privileged: true
+          image: {{ .Values.worker_npd.pods.worker_npd.image }}:{{ .Values.worker_npd.pods.worker_npd.tag }}
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "250m"
+            limits:
+              memory: "500Mi"
+              cpu: "500m"
+          volumeMounts:
+            - mountPath: "/proc"
+              name: proc-dir
+            - mountPath: "/sys"
+              name: sysfs
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8088
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8088
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 1
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      volumes:
+        - name: proc-dir
+          hostPath:
+            path: /proc
+        - name: sysfs
+          hostPath:
+            path: /sys
+
