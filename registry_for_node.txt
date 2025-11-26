@@ -1,0 +1,14 @@
+# Settings for registry, node settings
+dir name:
+/etc/containers/10-registry.apps.<your-domain>.conf
+
+# example
+[[registry]]
+prefix = "registry.apps.k8s.<your-domain>"
+insecure = true
+blocked = false
+location = "registry.apps.k8s.<your-domain>"
+
+[[registry.mirror]]
+location = "registry.apps.k8s.<your-domain>"
+insecure = true
