@@ -12,3 +12,39 @@ location = "registry.apps.k8s.<your-domain>"
 [[registry.mirror]]
 location = "registry.apps.k8s.<your-domain>"
 insecure = true
+
+# another settings
+
+/etc/containers/policy.json
+Этот файл определяет, какие реестры и образы считаются доверенными (используется библиотека containers/image).
+
+Пример содержимого:
+
+json
+{
+  "default": [
+    {
+      "type": "insecureAcceptAnything"
+    }
+  ],
+  "transports": {
+    "docker": [
+      {
+        "prefix": "my-internal-registry:5000",
+        "insecure": true
+      }
+    ]
+  }
+}
+Что важно:
+
+default — политика по умолчанию для всех реестров.
+
+transports.docker — настройки для Docker‑реестров (можно указать отдельные правила для конкретных реестров).
+
+insecure: true — разрешить небезопасные соединения для указанного реестра.
+
+Как проверить текущую политику:
+
+bash
+cat /etc/containers/policy.json
