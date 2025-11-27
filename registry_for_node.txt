@@ -1,6 +1,6 @@
 # Settings for registry, node settings
 dir name:
-/etc/containers/10-registry.apps.<your-domain>.conf
+/etc/containers/registries.conf.d/10-registry.apps.<your-domain>.conf
 
 # example
 [[registry]]
