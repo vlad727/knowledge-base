@@ -23,4 +23,66 @@ spec:
   issuerRef:
     kind: ClusterIssuer      # Используем существующий кластерный эмитент
     name: cluster-ca
-# about duration Параметр duration в сертификате (certificate) определяет продолжительность срока действия сертификата. Когда создаётся новый сертификат, этот параметр задаёт интервал времени, в течение которого сертиф
+# about duration Параметр duration в сертификате (certificate) определяет продолжительность срока действия сертификата. Когда создаётся новый сертификат, этот параметр задаёт интервал времени, в течение которого сертификат валиден
+
+# how to check which one certificate is used now (it may be cached if you did't restart pods)
+for example your application start and read secret with certificates, after that it will used till restart, even cert manager updated certificate
+# root cause: 
+you will see new certificate in your secret and new certificate inside pod, but application cached it and did't read it again only after restart
+so how o check it, just do curl with verbose
+
+### 
+curl -Iv -k  https://manager-ns-webhook.manager-ns.svc.cluster.local/health
+* Host manager-ns-webhook.manager-ns.svc.cluster.local:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.169.89.39
+*   Trying 192.169.89.39:443...
+* ALPN: curl offers h2,http/1.1
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.3 (IN), TLS change cipher, Change cipher spec (1):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_128_GCM_SHA256 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=manager-ns-webhook.manager-ns.svc
+*  start date: Oct  1 09:21:32 2025 GMT
+*  expire date: Dec 30 09:21:32 2025 GMT
+*  issuer: O=SOLUTION.SBT; OU=OSE; CN=cluster-ca
+*  SSL certificate verify result: unable to get local issuer certificate (20), continuing anyway.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+* Connected to manager-ns-webhook.manager-ns.svc.cluster.local (192.169.89.39) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://manager-ns-webhook.manager-ns.svc.cluster.local/health
+* [HTTP/2] [1] [:method: HEAD]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: manager-ns-webhook.manager-ns.svc.cluster.local]
+* [HTTP/2] [1] [:path: /health]
+* [HTTP/2] [1] [user-agent: curl/8.14.1]
+* [HTTP/2] [1] [accept: */*]
+> HEAD /health HTTP/2
+> Host: manager-ns-webhook.manager-ns.svc.cluster.local
+> User-Agent: curl/8.14.1
+> Accept: */*
+>
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* Request completely sent off
+< HTTP/2 200
+HTTP/2 200
+< date: Tue, 02 Dec 2025 09:05:00 GMT
+date: Tue, 02 Dec 2025 09:05:00 GMT
+<
+
+* Connection #0 to host manager-ns-webhook.manager-ns.svc.cluster.local left intact
+###
+
+# how to get serial number with request 
+echo | openssl s_client -connect manager-ns-webhook.manager-ns.svc.cluster.local:443 -showcerts 2>/dev/null | openssl x509 -noout -text
+# serial number should be the same as attached to pod 
