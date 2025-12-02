@@ -1,0 +1,26 @@
+# Get certificates and sign request 
+kubectl get certificates,certificateRequests -n <your-namespace> 
+example:
+NAME                                                         READY   SECRET                   AGE
+certificate.cert-manager.io/manager-ns-webhook-certificate   True    manager-ns-webhook-tls   2m23s
+
+NAME                                                                      APPROVED   DENIED   READY   ISSUER       REQUESTOR                                             AGE
+certificaterequest.cert-manager.io/manager-ns-webhook-certificate-cwfbt   True                True    cluster-ca   system:serviceaccount:kubernetes-certs:cert-manager   114s
+
+# Certificate min duration is 1h
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: temporary-certificate
+  namespace: manager-ns
+spec:
+  commonName: temp.example.com # Здесь можно изменить CN по своему усмотрению
+  duration: 1h               # Устанавливаем продолжительность действия (1 час)
+  renewBefore: 1m            # Обновляем заранее за минуту перед истечением срока
+  secretName: temp-tls       # Имя секрета, куда сохранится сертификат
+  dnsNames:
+  - temp.example.com          # Можно добавить дополнительные DNS имена
+  issuerRef:
+    kind: ClusterIssuer      # Используем существующий кластерный эмитент
+    name: cluster-ca
+# about duration Параметр duration в сертификате (certificate) определяет продолжительность срока действия сертификата. Когда создаётся новый сертификат, этот параметр задаёт интервал времени, в течение которого сертиф
