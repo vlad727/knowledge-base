@@ -48,3 +48,8 @@ insecure: true — разрешить небезопасные соединен�
 
 bash
 cat /etc/containers/policy.json
+
+# if use short name for image in your template such as nginx and registry.conf contain invalid/not-ative url/location for registry you will get an error below
+3m11s       Warning   InspectFailed   pod/title   Failed to inspect image "nginx": rpc error: code = Unknown desc = short-name "nginx:latest" did not resolve to an alias and no containers-registries.conf(5) was found
+# if you use full name for image with prefix such as docker.io/library/nginx or your own/private registry it will pull image from such registry 
+# even you have incorrect/not-active registry location in your registry.conf
