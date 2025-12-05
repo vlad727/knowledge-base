@@ -1,0 +1,13 @@
+# How to get chain of certs
+## request for you registry
+openssl s_client -connect registry.apps.<your-domain>:443 -showcerts
+
+CONNECTED(00000003)
+depth=3 O = <YOUR_DOMAIN>, CN = Certificate Authority 
+verify return:1
+depth=2 CN = ca.apps.<your-domain>
+verify return:1
+depth=1 O = <YOUR_DOMAIN>, OU = OSE, CN = cluster-ca
+verify return:1
+depth=0
+verify return:1
