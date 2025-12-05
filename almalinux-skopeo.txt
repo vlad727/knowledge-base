@@ -1,0 +1,48 @@
+FROM almalinux:9
+
+# Отключаем стандартные репозитории (если нужно)
+RUN sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/almalinux-appstream.repo
+RUN sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/almalinux-baseos.repo
+RUN sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/almalinux-extras.repo
+
+# Создаём файл репозитория Truenetwork BaseOS
+RUN echo '[truenetwork-BaseOS]' > /etc/yum.repos.d/truenetworkBaseOS.repo && \
+    echo 'name=AlmaLinux Mirror by Truenetwork' >> /etc/yum.repos.d/truenetworkBaseOS.repo && \
+    # Исправленный baseurl (убираем лишнее /repodata/)
+    echo 'baseurl=https://mirror.truenetwork.ru/almalinux/9/BaseOS/x86_64/os/' >> /etc/yum.repos.d/truenetworkBaseOS.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/truenetworkBaseOS.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/truenetworkBaseOS.repo && \
+    echo 'gpgkey=https://mirror.truenetwork.ru/almalinux/9/BaseOS/x86_64/os/RPM-GPG-KEY-AlmaLinux-9' >> /etc/yum.repos.d/truenetworkBaseOS.repo
+
+# Создаём файл репозитория Truenetwork AppStream
+RUN echo '[truenetwork-AppStream]' > /etc/yum.repos.d/truenetworkAppStream.repo && \
+    echo 'name=AlmaLinux Mirror by Truenetwork' >> /etc/yum.repos.d/truenetworkAppStream.repo && \
+    # Исправленный baseurl (убираем лишнее /repodata/)
+    echo 'baseurl=https://mirror.truenetwork.ru/almalinux/9/AppStream/x86_64/os/' >> /etc/yum.repos.d/truenetworkAppStream.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/truenetworkAppStream.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/truenetworkAppStream.repo && \
+    echo 'gpgkey=https://mirror.truenetwork.ru/almalinux/9/AppStream/x86_64/os/RPM-GPG-KEY-AlmaLinux-9' >> /etc/yum.repos.d/truenetworkAppStream.repo
+
+# Обновляем кэш метаданных (теперь должно сработать)
+RUN dnf makecache --refresh
+
+
+# Устанавливаем пакеты
+RUN dnf update -y && \
+    dnf install -y \
+        skopeo \
+        procps-ng \
+        net-tools \
+        wget \
+        ca-certificates && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+
+# Проверка установленных утилит
+RUN skopeo --version && \
+    ps --version && \
+    ifconfig -v
+
+
+CMD ["/bin/bash"]
