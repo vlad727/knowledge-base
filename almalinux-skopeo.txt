@@ -61,4 +61,11 @@ if add --tls-verify=false
 skopeo inspect --tls-verify=false  docker://registry.apps.<your-domain>/alpine/alpine:3.22.1 
 it will provide you json with data
 
+### skopeo debug ###
+skopeo --debug  inspect  --cert-dir /etc/kubernetes/   docker://registry.apps.<your-domain>/alpine/alpine:3.22.1
+DEBU[0000] Using registries.d directory /etc/containers/registries.d
+DEBU[0000] Loading registries configuration "/etc/containers/registries.conf"
+DEBU[0000] Loading registries configuration "/etc/containers/registries.conf.d/000-shortnames.conf"
+....
+
 
