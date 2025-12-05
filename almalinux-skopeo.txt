@@ -1,3 +1,5 @@
+# About skopeo 
+
 FROM almalinux:9
 # current Dockerfile allow you install packages from Russia with truenetwork repos
 
@@ -47,3 +49,16 @@ RUN skopeo --version && \
 
 
 CMD ["/bin/bash"]
+
+### About an errors ###
+# If you get an error FATA[0000] Error parsing image name
+such error appear if you have a problem with certs
+
+skopeo inspect   docker://registry.apps.<your-domain>/alpine/alpine:3.22.1
+FATA[0000] Error parsing image name "docker://registry.apps.<your-domain>/alpine/alpine:3.22.1": pinging container registry registry.apps.k<your-domain>: Get "https://registry.apps.<your-domain>/v2/": tls: failed to verify certificate: x509: certificate signed by unknown authority
+
+if add --tls-verify=false
+skopeo inspect --tls-verify=false  docker://registry.apps.<your-domain>/alpine/alpine:3.22.1 
+it will provide you json with data
+
+
