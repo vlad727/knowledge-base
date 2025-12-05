@@ -11,3 +11,6 @@ depth=1 O = <YOUR_DOMAIN>, OU = OSE, CN = cluster-ca
 verify return:1
 depth=0
 verify return:1
+
+## Все сертификаты подписаны корректно (иначе был бы verify return:0).
+## Цепочка полная — сервер отправляет все промежуточные CA.
