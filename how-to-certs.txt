@@ -14,3 +14,20 @@ verify return:1
 
 ## Все сертификаты подписаны корректно (иначе был бы verify return:0).
 ## Цепочка полная — сервер отправляет все промежуточные CA.
+
+# How to add certs for registry #
+
+## Ubuntu/Debian
+sudo cp my-ca.crt /usr/local/share/ca-certificates/
+sudo update-ca-certificates
+
+## Centos/RHEL
+sudo cp my-ca.crt /etc/pki/ca-trust/source/anchors/
+sudo update-ca-trust extract
+
+## Restart crio to apply changes
+systemctl restart cri-o.service
+1. Обновляет базу доверенных сертификатов. Когда вы помещаете новый сертификат в каталог /etc/pki/ca-trust/source/anchors/, этот сертификат ещё не активирован системой автоматически. Команда update-ca-trust extract берёт сертификаты из указанного каталога и создаёт обновлённую версию файла с перечнем всех доверенных корневых сертификатов.
+
+2. Создаёт или обновляет файл trust chain (/etc/pki/tls/certs/ca-bundle.crt) и файлы в каталоге /etc/pki/ca-trust/extracted/. Эти файлы используются различными приложениями для проверки валидности сертификатов при установлении соединений по HTTPS.
+
