@@ -31,3 +31,60 @@ systemctl restart cri-o.service
 
 2. Создаёт или обновляет файл trust chain (/etc/pki/tls/certs/ca-bundle.crt) и файлы в каталоге /etc/pki/ca-trust/extracted/. Эти файлы используются различными приложениями для проверки валидности сертификатов при установлении соединений по HTTPS.
 
+## About certs node, kinds of cert and dirs
+/etc/kubernetes/pki/ca.crt
+root ca for cluster k8s used only for internal communication K8s (kube‑apiserver, kubelet etc.) do not used for registries 
+
+########################################################################################################################################################
+# How to know which one cert we need for regestry
+command example:
+openssl s_client -connect registry.apps.k8s.<your-domain-registry>:443 -showcerts </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -dates
+subject=
+issuer=O=<REG_DOMAIN>.COM, OU=OSE, CN=cluster-ca
+notBefore=Oct 18 10:38:58 2025 GMT
+notAfter=Jan 16 10:38:58 2026 GMT
+
+"issuer=O=<REG_DOMAIN>.COM, OU=OSE, CN=cluster-ca" <<< who signed registry
+
+## Check cert stored on node k8s
+openssl x509 --in /etc/kubernetes/pki/ca.crt --text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            0e:01:ab:f3:29:8a:a1:43:22:f4:13:a0:b8:85:53:52
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: O = <REG_DOMAIN>.COM, OU = OSE, CN = cluster-ca <<< issuer the same as for registry
+        Validity
+            Not Before: Jul 22 09:46:22 2024 GMT
+            Not After : Jul 21 09:46:22 2029 GMT
+###
+# Get all chain certs from registy
+openssl s_client -connect registry.apps.k8s.prod-01.my-company.com:443 -showcerts </dev/null > intermediate_cert.pem
+
+depth=3 O = MY-COMPANY.COM, CN = Certificate Authority ### root certificate, created by company, sign all certificates (ROOT)
+verify return:1
+
+depth=2 CN = ca.apps.k8s.my-company.com ### Этот сертификат выпущен корневым сертификатом и используется для подписания других сертификатов, например, сертификатов серверов (intermediate)
+verify return:1
+
+depth=1 O = MY-COMPANY.COM, OU = OSE, CN = cluster-ca # Это сертификат, который используется самим реестром контейнеров. Он подписан промежуточным сертификатом.
+verify return:1
+(Сертификат registry удостоверяет, что сервер, к которому вы подключаетесь, действительно принадлежит организации MY-COMPANY.COM и управляется её инфраструктурой Kubernetes. Это важно для безопасности, чтобы убедиться, что вы взаимодействуете с доверенным ресурсом.)
+
+depth=0
+verify return:1
+DONE
+
+## Node certificate ca.crt from /etc/kubernetes/pki
+O = MY-COMPANY.COM, OU = OSE + OU = k8s.app-test.my-company.com, CN = kubernetes # Этот сертификат подписан тем же самым cluster-ca, что и сертификат реестра. Это означает, что ваш локальный сертификат и сертификат реестра находятся в одной цепочке доверия.
+
+### How does it work
+* Корневой сертификат (Certificate Authority):Создан самой организацией MY-COMPANY.COM. Он используется для подписания промежуточных сертификатов.
+* Промежуточный сертификат (ca.apps.k8s.ose-prod.my-company.com):Подписан корневым сертификатом. Он используется для подписания сертификатов серверов, таких как реестр контейнеров.
+* Сертификат реестра (cluster-ca):Подписан промежуточным сертификатом. Он удостоверяет сам реестр контейнеров.
+* Локальный сертификат (kubernetes):Подписан тем же cluster-ca, что и сертификат реестра. Это означает, что ваш локальный сертификат и сертификат реестра находятся в одной цепочке доверия.
+
+########################################################################################################################################################
+
+
