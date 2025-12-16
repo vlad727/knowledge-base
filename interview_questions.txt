@@ -1,0 +1,11 @@
+# Most common questions
+1. Git rebase, branches, commit etc.
+2. Docker cmd/entrypoint etc.
+3. 
+
+# Interview plan 
+Git - 
+Terraform - ?
+Monitroing - Grafana, Prometheus, Victoria Metrics, AlertManager, Tracing 
+Ansible - what is role, playbook, compare with chief and puppet 
+Kubernetes - tolaration and taints, node port, services,
