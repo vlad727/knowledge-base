@@ -73,3 +73,4 @@ PostgresSQL about sunc and async
 - Операции, создающие большое количество мелких изменений в базе данных, которые легко восстанавливаются вручную.
 ## RabbitMQ 
 How to check that consumer consume messages just check queue in rabbitmq
+if you have more than 1 host may be 5, so you can use script to watch all queues pn all hosts
