@@ -1,0 +1,90 @@
+# Just an example how to use golang instead ansible
+
+## ssh configuration
+import "golang.org/x/crypto/ssh"
+
+func connect(host, user, keyPath string) (*ssh.Client, error) {
+    key, err := os.ReadFile(keyPath)
+    if err != nil {
+        return nil, err
+    }
+    signer, err := ssh.ParsePrivateKey(key)
+    if err != nil {
+        return nil, err
+    }
+
+    config := &ssh.ClientConfig{
+        User: user,
+        Auth: []ssh.AuthMethod{
+            ssh.PublicKeys(signer),
+        },
+        HostKeyCallback: ssh.InsecureIgnoreHostKey(), // для продакшена — валидировать
+    }
+
+    client, err := ssh.Dial("tcp", host+":22", config)
+    return client, err
+}
+
+## run command on the server
+func runCommand(client *ssh.Client, cmd string) (string, error) {
+    session, err := client.NewSession()
+    if err != nil {
+        return "", err
+    }
+    defer session.Close()
+
+    var stdout, stderr bytes.Buffer
+    session.Stdout = &stdout
+    session.Stderr = &stderr
+
+    err = session.Run(cmd)
+    if err != nil {
+        return "", fmt.Errorf("command failed: %v, stderr: %s", err, stderr.String())
+    }
+
+    return stdout.String(), nil
+}
+
+## install package 
+func installPackage(client *ssh.Client, pkg string) error {
+    cmd := fmt.Sprintf("sudo apt-get update && sudo apt-get install -y %s", pkg)
+    output, err := runCommand(client, cmd)
+    if err != nil {
+        return fmt.Errorf("failed to install %s: %v", pkg, err)
+    }
+    log.Printf("Installed %s: %s", pkg, output)
+    return nil
+}
+
+## 
+func deployToServers(servers []string, pkg string) {
+    var wg sync.WaitGroup
+    for server := range servers {
+        wg.Add(1)
+        go func(server string) {
+            defer wg.Done()
+            client, err := connect(server, "user", "/path/to/key")
+            if err != nil {
+                log.Printf("Failed to connect to %s: %v", server, err)
+                return
+            }
+            err = installPackage(client, pkg)
+            if err != nil {
+                log.Printf("Failed on %s: %v", server, err)
+            }
+            client.Close()
+        }(server)
+    }
+    wg.Wait()
+}
+
+## main 
+var (
+    servers = flag.StringSlice("servers", nil, "Список серверов")
+    package = flag.String("package", "", "Имя пакета для установки")
+)
+
+func main() {
+    flag.Parse()
+    deployToServers(*servers, *package)
+}
