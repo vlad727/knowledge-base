@@ -9,6 +9,15 @@ Terraform - ?
 Monitroing - Grafana, Prometheus, Victoria Metrics, AlertManager, Tracing 
 Ansible - what is role, playbook, compare with chief and puppet 
 Kubernetes - tolaration and taints, node port, services
+##########################################################################################################################################
+# Docker
+Do small image 
+.dockerignore
+multistage
+
+# what is containers
+cgroups, namespaces etc.
+
 
 ##########################################################################################################################################
 # About LLM and AI
