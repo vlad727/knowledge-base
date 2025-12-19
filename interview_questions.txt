@@ -1,7 +1,7 @@
 # Most common questions
 1. Git rebase, branches, commit etc.
 2. Docker cmd/entrypoint etc.
-3. 
+3. «Bootstrapping process» (буквально — «процесс подтягивания себя за шнурки») это начальный этап запуска чего‑либо с минимальными внешними ресурсами, когда система или проект «заводит себя сам» за счёт внутренних механизмов.
 
 # Interview plan 
 Git - 
