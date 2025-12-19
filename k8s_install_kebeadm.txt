@@ -6,3 +6,4 @@ cni - cilium
 Ingress Controllers  - nginx or gateway api
 cluster os - rpm-based
 ##
+https://blog.andreev.it/2023/10/install-kubernetes-with-cri-o-and-cilium-on-rocky-linux-9/
