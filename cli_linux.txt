@@ -1,0 +1,9 @@
+# Get ip for linux machine except command "ip a" and "ifconfig"
+hostname -I
+nmcli 
+curl ifconfig.me — only public ip  (work with external resource)
+# Get 1 line from file /var/log/syslog
+head -n 1
+cat  /var/log/hawkey.log | awk 'NR == 1'
+less, more
+tac | tail -n 1 (tac is reverse for cat)
