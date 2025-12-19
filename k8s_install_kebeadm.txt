@@ -1,0 +1,8 @@
+# Main description for k8s cluster  
+1 master node 
+1 worker node
+container runtime - crio
+cni - cilium
+Ingress Controllers  - nginx or gateway api
+cluster os - rpm-based
+##
