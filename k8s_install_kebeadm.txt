@@ -33,8 +33,9 @@ sudo nmcli connection up "Wired connection 1"
 ################################################################################################################################
 ## sudo for user
 useradd  vlad
+passwd vlad
 usermod -a -G wheel vlad
-echo 'vlad ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopassword (| sudo tee /etc/sudoers.d/stack )
+echo 'vlad ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopassword (| sudo tee /etc/sudoers.d/nopassword )
 cat /etc/sudoers.d/nopassword
 
 Note:
@@ -59,6 +60,7 @@ cat /etc/hosts
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 192.168.82.2 master.local
 192.168.82.5 worker.local
+
 ## to check resolve use getenv hosts
 getent hosts master.local
 Note:
@@ -72,8 +74,9 @@ sudo sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sy
 sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
-## https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/change-package-repository/
 ## add repo k8s 
+## https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/change-package-repository/
+
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -83,6 +86,9 @@ gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl
 EOF
+
+Note:
+If you use deb based os, repo will be for deb
 
 ## or create file 
 sudo vi /etc/yum.repos.d/kubernetes.repo
