@@ -5,19 +5,14 @@ container runtime - crio
 cni - cilium
 Ingress Controllers  - nginx or gateway api
 cluster os - rpm-based
+
 ## Links 
 ## https://www.youtube.com/watch?v=Vw0c3ZaR9uI
 ## https://blog.andreev.it/2023/10/install-kubernetes-with-cri-o-and-cilium-on-rocky-linux-9/
 ## https://vaiti.io/kak-ustanovit-klaster-kubernetes-s-cri-o-v-kachestve-container-engine/
 
-Note:
-# Start overlay and netfilter after reboot nodes 
-echo "overlay" >> /etc/modules
-echo "br_netfilter" >> /etc/modules
-
 ################################################################################################################################
-## Time web settings
-
+## Timeweb settings for virtual machines with private ip
 ## get name for private interface
 nmcli c s
 NAME                UUID                                  TYPE      DEVICE
@@ -31,7 +26,14 @@ sudo nmcli connection modify "Wired connection 1" ipv4.method manual ipv4.addres
 sudo nmcli connection up "Wired connection 1"
 
 ################################################################################################################################
-## sudo for user
+## Install k8s 
+1.
+### set hostname
+sudo hostnamectl set-hostname master.local
+sudo hostnamectl set-hostname worker.local
+
+2.
+### sudo for user
 useradd  vlad
 passwd vlad
 usermod -a -G wheel vlad
@@ -40,57 +42,96 @@ cat /etc/sudoers.d/nopassword
 
 Note:
 set password or use only key
-################################################################################################################################
-## Install packages
-sudo yum install net-tools curl wget bind-utils -y
 
-Note:
-package ca-certificates installed by default
-but if you use deb based os, need to install packages below:
-sudo apt-get install ca-certificates app-transport-https curl
-################################################################################################################################
-## Install k8s 
-## set hostname
-sudo hostnamectl set-hostname master
-sudo hostnamectl set-hostname worker
-
-## Add new records to hosts
+3.
+### Add new records to hosts
 cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 192.168.82.2 master.local
 192.168.82.5 worker.local
 
-## to check resolve use getenv hosts
-getent hosts master.local
 Note:
+#### to check resolve for your host, use getenv hosts
+getent hosts master.local
 "host" utility, used dns and ignore /etc/hosts
 so you can't use command host master.local
 
-## disable selinux 
+4.
+### Install packages
+sudo yum install net-tools curl wget bind-utils -y
+
+Note:
+package ca-certificates installed by default
+but if you use deb based os, need to install packages below:
+sudo apt-get install ca-certificates app-transport-https curl
+
+5.
+### disable selinux 
 sudo sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux
 
-## disable swap
+6.
+### disable swap
 sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
-## add repo k8s 
-## https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/change-package-repository/
+7.
+### Add modules, for new operating systems, such as almalinux etc.
+### file may has another name, not only crio.conf for example just modules.conf
+sudo tee /etc/modules-load.d/crio.conf <<EOF
+overlay
+br_netfilter
+EOF
+
+Note:
+#### for old operating systems
+#### Start overlay and netfilter after reboot nodes
+echo "overlay" >> /etc/modules
+echo "br_netfilter" >> /etc/modules
+
+8.
+### Sysctl params, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+
+Note: 
+# Another sysctl settings for k8s
+net.ipv4.tcp_max_syn_backlog=100000
+net.ipv4.tcp_tw_reuse=1
+net.core.somaxconn=65535
+net.core.netdev_max_backlog=100000
+fs.file-max=500000
+net.ipv4.ip_forward=1
+net.ipv4.ip_local_port_range=5000 60999
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+net.bridge.bridge-nf-call-arptables=1
+
+
+9.
+### Add repo k8s 
+#### https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/change-package-repository/
 
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/repodata/repomd.xml.key
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl
 EOF
 
 Note:
 If you use deb based os, repo will be for deb
 
-## or create file 
+#### or create file 
 sudo vi /etc/yum.repos.d/kubernetes.repo
 
 Note:
@@ -99,11 +140,29 @@ pkgs.k8s.io
 pkgs.kubernetes.io
 packages.kubernetes.io
 
-## crio installation 
+10.
+### Add repo for crio
 VERSION=1.26
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
-sudo dnf -y install cri-o cri-tools kubelet kubeadm kubectl 
-sudo systemctl enable --now crio
-sudo systemctl status criow
 
+Note:
+devel:kubic:libcontainers:stable является стандартным названием пространства имен проекта OpenSUSE Kubic. Оно обозначает следующую структуру:
+- devel: пространство разработки (development)
+- kubic: проект OpenSUSE Kubic
+- libcontainers: библиотека контейнеров
+- stable: стабильная ветка релизов
+
+11.
+### kubelet, kubeadm, kubectl and crio installation 
+sudo dnf -y install cri-o cri-tools kubelet kubeadm kubectl 
+
+sudo systemctl enable --now crio
+sudo systemctl status crio
+
+sudo systemctl enable --now kubelet
+sudo systemctl status kubelet
+
+Note:
+"enable --now" will start daemon and add it to autostart 
+   
