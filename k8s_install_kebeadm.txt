@@ -5,5 +5,99 @@ container runtime - crio
 cni - cilium
 Ingress Controllers  - nginx or gateway api
 cluster os - rpm-based
-##
-https://blog.andreev.it/2023/10/install-kubernetes-with-cri-o-and-cilium-on-rocky-linux-9/
+## Links 
+## https://www.youtube.com/watch?v=Vw0c3ZaR9uI
+## https://blog.andreev.it/2023/10/install-kubernetes-with-cri-o-and-cilium-on-rocky-linux-9/
+## https://vaiti.io/kak-ustanovit-klaster-kubernetes-s-cri-o-v-kachestve-container-engine/
+
+Note:
+# Start overlay and netfilter after reboot nodes 
+echo "overlay" >> /etc/modules
+echo "br_netfilter" >> /etc/modules
+
+################################################################################################################################
+## Time web settings
+
+## get name for private interface
+nmcli c s
+NAME                UUID                                  TYPE      DEVICE
+System eth0         5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  ethernet  eth0
+Wired connection 1  43a177d0-cd70-3e4c-b755-72dce7e2351c  ethernet  eth1
+
+## set ip address with nmcli 
+sudo nmcli connection modify "Wired connection 1" ipv4.method manual ipv4.addresses 192.168.82.2/24 connection.autoconnect yes
+
+## activate connection 
+sudo nmcli connection up "Wired connection 1"
+
+################################################################################################################################
+## sudo for user
+useradd  vlad
+usermod -a -G wheel vlad
+echo 'vlad ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopassword (| sudo tee /etc/sudoers.d/stack )
+cat /etc/sudoers.d/nopassword
+
+Note:
+set password or use only key
+################################################################################################################################
+## Install packages
+sudo yum install net-tools curl wget bind-utils -y
+
+Note:
+package ca-certificates installed by default
+but if you use deb based os, need to install packages below:
+sudo apt-get install ca-certificates app-transport-https curl
+################################################################################################################################
+## Install k8s 
+## set hostname
+sudo hostnamectl set-hostname master
+sudo hostnamectl set-hostname worker
+
+## Add new records to hosts
+cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.82.2 master.local
+192.168.82.5 worker.local
+## to check resolve use getenv hosts
+getent hosts master.local
+Note:
+"host" utility, used dns and ignore /etc/hosts
+so you can't use command host master.local
+
+## disable selinux 
+sudo sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux
+
+## disable swap
+sudo swapoff -a
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
+## https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/change-package-repository/
+## add repo k8s 
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl
+EOF
+
+## or create file 
+sudo vi /etc/yum.repos.d/kubernetes.repo
+
+Note:
+The URL used for the Kubernetes package repositories is not limited to pkgs.k8s.io, it can also be one of:
+pkgs.k8s.io
+pkgs.kubernetes.io
+packages.kubernetes.io
+
+## crio installation 
+VERSION=1.26
+sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
+sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
+sudo dnf -y install cri-o cri-tools kubelet kubeadm kubectl 
+sudo systemctl enable --now crio
+sudo systemctl status criow
+
