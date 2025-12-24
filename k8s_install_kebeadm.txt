@@ -40,12 +40,14 @@ sudo hostnamectl set-hostname worker.local
 useradd  vlad
 passwd vlad
 usermod -a -G wheel vlad
-echo 'vlad ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopassword (| sudo tee /etc/sudoers.d/nopassword )
+echo 'vlad ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopassword # another way use command "| sudo tee /etc/sudoers.d/nopassword" if you are undere user vlad
 cat /etc/sudoers.d/nopassword
 
 Note:
 set password or use only key
 above commands for both nodes
+if you add vlad to nopassword file, user vlad may exec command without ask password only use comand sudo
+
 
 3.
 ### Add new records to file hosts
@@ -55,7 +57,7 @@ vim  /etc/hosts and add lines below:
 
 Note:
 If you want to check your host with util host ("host" utility, used dns and ignore file /etc/hosts) 
-instead "host" use "getenv"
+instead "host" use "getent"
 getent hosts master.local
 
 4.
@@ -79,9 +81,7 @@ sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 7.
 ### Add modules, for new operating systems, such as almalinux etc.
-File may has another name, not only crio.conf for example just modules.conf
-
-sudo tee /etc/modules-load.d/crio.conf <<EOF
+sudo tee /etc/modules-load.d/modules.conf <<EOF
 overlay
 br_netfilter
 EOF
@@ -90,6 +90,7 @@ Note:
 For old operating systems, start overlay and netfilter after reboot nodes use command below:
 echo "overlay" >> /etc/modules
 echo "br_netfilter" >> /etc/modules
+File may has another name, not only modules.conf, also it may has a name crio.conf 
 
 8.
 ### Sysctl params, params persist across reboots
@@ -117,22 +118,25 @@ net.bridge.bridge-nf-call-arptables=1
 
 
 9.
-### Add repo k8s 
+### Add repos k8s and crio
 #### link with repo examples https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/change-package-repository/
 
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key
-exclude=kubelet kubeadm kubectl
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl kubernetes-cni
 EOF
 
 Note:
 If you use deb based os, repo will be for deb
-
+To check repo use command below:
+dnf repolist or yum repolist
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni <<< special flag which one allow you to exclude such packages from update/install process, if run yum update -y
+(что бы случайно не обновить пакеты после yum update -y)
 Or create file by manual
 sudo vi /etc/yum.repos.d/kubernetes.repo
 The URL used for the Kubernetes package repositories is not limited to pkgs.k8s.io, it can also be one of:
@@ -140,8 +144,7 @@ pkgs.k8s.io
 pkgs.kubernetes.io
 packages.kubernetes.io
 
-10.
-### Add repo for crio
+Add repo for crio
 VERSION=1.26
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
@@ -153,15 +156,73 @@ devel:kubic:libcontainers:stable является стандартным наз�
 - libcontainers: библиотека контейнеров
 - stable: стабильная ветка релизов
 
-11.
+10.
 ### kubelet, kubeadm, kubectl and crio installation stage
-sudo dnf -y install cri-o cri-tools kubelet kubeadm kubectl 
+
+sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+sudo dnf install -y cri-o cri-tools
 
 sudo systemctl enable --now crio && systemctl status crio
-
 sudo systemctl enable --now kubelet && systemctl status kubelet
 
 Note:
 "enable --now" will start daemon and add it to autostart 
 Repeat above command for both nodes
+--disableexcludes=kubernetes <<< allow you to disable your exclude for such packages from your kubernetes.repo
+
+11.
+### Init stage for master node
+sudo kubeadm init --control-plane-endpoint="master.local:6443" --pod-network-cidr=10.244.0.0/16
+# You’ll get an output that says how to join the nodes, something like kubeadm join master… + a token
+
+# if get any an erros like below:
+A control plane component may have crashed or exited when started by the container runtime.
+To troubleshoot, list all containers using your preferred container runtimes CLI.
+Here is one example how you may list all running Kubernetes containers by using crictl:
+	- 'crictl --runtime-endpoint unix:///var/run/crio/crio.sock ps -a | grep kube | grep -v pause'
+	Once you have found the failing container, you can inspect its logs with:
+	- 'crictl --runtime-endpoint unix:///var/run/crio/crio.sock logs CONTAINERID'
+
+# need to troubleshoot an issue and resolve it, after reset init with command below:
+sudo kubeadm reset
+sudo rm -rf /etc/kubernetes/*
+sudo rm -rf /var/lib/kubelet/*
+sudo systemctl daemon-reload
+
+Note:
+Command above, will create certificates and configuration files with pod network 
+all ip addresses with sych mask /16: 65 536.
+adresses for host: 65 534.
+reserved (not for hosts): 2 address (network and broadcast).
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+12.
+### Cilium install 
+CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
+CLI_ARCH=amd64
+if [ "$(uname -m)" = "aarch64" ]; then CLI_ARCH=arm64; fi
+curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
+sudo tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz /usr/local/bin
+rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+cilium install --version 1.14.2
+
+13. 
+### Join worker node
+sudo kubeadm join master.homelab.local:6443 --token t2yir0.7n49rn6r57msy4j4 \
+        --discovery-token-ca-cert-hash sha256:563360fcf60c49be91cdcf6486a4954c579a80c54503127ee0682ab8f86ec840
+
+Note:
+Warning messages after init 
+[preflight] Running pre-flight checks
+	[WARNING ContainerRuntimeVersion]: You must update your container runtime to a version that supports the CRI method RuntimeConfig. Falling back to using cgroupDriver from kubelet config will be removed in 1.36. For more information, see https://git.k8s.io/enhancements/keps/sig-node/4033-group-driver-detection-over-cri
+	[WARNING SystemVerification]: kernel release 5.14.0-611.13.1.el9_7.x86_64 is unsupported. Supported LTS versions from the 5.x series are 5.4, 5.10 and 5.15. Any 6.x version is also supported. For cgroups v2 support, the recommended version is 5.10 or newer
+
+
+
+
+
    
