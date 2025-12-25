@@ -274,6 +274,15 @@ sudo nmcli connection modify "Wired connection 1" ipv4.ignore-auto-dns yes
 echo "nameserver 192.168.82.2" | sudo tee /etc/resolv.conf.d/local
 sudo systemctl restart NetworkManager
 
+# chrony how to 
+sudo yum install chrony  -y
+sudo vim /etc/chrony.conf
+
+# comment 2.almalinux and ru ntp
+pool ru.pool.ntp.org iburst
+
+# set time zone
+sudo timedatectl set-timezone Europe/Moscow
 
 
 
