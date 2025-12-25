@@ -398,4 +398,56 @@ sudo cat /etc/crio/crio.conf | grep cgroup
 conmon_cgroup = "pod"
 cgroup_manager = "systemd"
 
+# final crio.conf from master-1 node
+cat  /etc/crio/crio.conf
+[crio]
+# Основные пути
+runroot = "/run/crio"
+graphroot = "/var/lib/containers/storage"
+
+[crio.api]
+# Сокет для взаимодействия с kubelet
+stream_address = "127.0.0.1"
+stream_port = "10010"
+
+[crio.runtime]
+# Путь к OCI-runtime (обычно runc)
+runtime_path = "/usr/sbin/runc"
+# Или для newer systems:
+# runtime_path = "/usr/bin/runc"
+
+# Обязательные параметры
+conmon = "/usr/bin/conmon"
+#conmon = "/usr/libexec/cri-o/conmon"
+conmon_cgroup = "pod"
+pids_limit = 1024
+log_level = "info"
+
+# SELinux (если включён)
+selinux = true
+
+# Cgroups (важно для контроля ресурсов)
+cgroup_manager = "systemd"
+
+[crio.image]
+# Реестры (если нужны кастомные)
+#registries = [
+#    "registry.k8s.io",
+#    "docker.io"
+#]
+
+[crio.network]
+plugin_dirs = [
+    "/opt/cni/bin",
+    "/usr/libexec/cni"
+]
+
+[crio.metrics]
+enable_metrics = true
+metrics_port = 9537
+
+[crio.tracing]
+[crio.nri]
+[crio.stats]
+
    
