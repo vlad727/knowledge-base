@@ -195,6 +195,8 @@ all ip addresses with sych mask /16: 65 536.
 adresses for host: 65 534.
 reserved (not for hosts): 2 address (network and broadcast).
 
+For debug init use --v=5 or higher
+
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
