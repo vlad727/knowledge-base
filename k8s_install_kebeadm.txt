@@ -168,6 +168,9 @@ devel:kubic:libcontainers:stable является стандартным наз�
 - kubic: проект OpenSUSE Kubic
 - libcontainers: библиотека контейнеров
 - stable: стабильная ветка релизов
+after install crio check recomendation from kubernetes project
+https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cri-o
+
 
 10.
 ### kubelet, kubeadm, kubectl and crio installation stage
@@ -386,5 +389,13 @@ plugin_dirs = [
 enable_metrics = true
 metrics_port = 9090
 
+
+# cgroupDriver for container runtime should be the same as for kubelet
+sudo cat /var/lib/kubelet/config.yaml | grep cgroup
+cgroupDriver: systemd
+
+sudo cat /etc/crio/crio.conf | grep cgroup
+conmon_cgroup = "pod"
+cgroup_manager = "systemd"
 
    
