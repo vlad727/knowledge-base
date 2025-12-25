@@ -450,4 +450,8 @@ metrics_port = 9537
 [crio.nri]
 [crio.stats]
 
+# The most recently problems or erros when you try to init control plane
+1. kubeadm init can't resolve hostname for master node -> resolution, use dnsmasq, switch off ipv6
+2. another error crio does not create containers -> resolution change settings for crio.conf
+3. 
    
