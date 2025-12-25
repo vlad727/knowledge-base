@@ -6,6 +6,12 @@ Cni - cilium
 Ingress Controllers  - nginx or gateway api
 Cluster OS - rpm based distrib
 
+Note:
+Before installation, check capabilty kernel version and kubernetes, also container runtime too
+from official site https://cri-o.io/
+KUBERNETES_VERSION=v1.32
+CRIO_VERSION=v1.32
+
 ## Links with manuals
 ## https://www.youtube.com/watch?v=Vw0c3ZaR9uI
 ## https://blog.andreev.it/2023/10/install-kubernetes-with-cri-o-and-cilium-on-rocky-linux-9/
@@ -145,7 +151,7 @@ pkgs.kubernetes.io
 packages.kubernetes.io
 
 Add repo for crio
-VERSION=1.26
+VERSION=1.28 <<< this the last version from opensuse 
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
 
@@ -217,12 +223,57 @@ cilium install --version 1.14.2
 sudo kubeadm join master.homelab.local:6443 --token t2yir0.7n49rn6r57msy4j4 \
         --discovery-token-ca-cert-hash sha256:563360fcf60c49be91cdcf6486a4954c579a80c54503127ee0682ab8f86ec840
 
-Note:
+Main Notes:
+
+Errors and Warnings
+
 Warning messages after init 
 [preflight] Running pre-flight checks
 	[WARNING ContainerRuntimeVersion]: You must update your container runtime to a version that supports the CRI method RuntimeConfig. Falling back to using cgroupDriver from kubelet config will be removed in 1.36. For more information, see https://git.k8s.io/enhancements/keps/sig-node/4033-group-driver-detection-over-cri
 	[WARNING SystemVerification]: kernel release 5.14.0-611.13.1.el9_7.x86_64 is unsupported. Supported LTS versions from the 5.x series are 5.4, 5.10 and 5.15. Any 6.x version is also supported. For cgroups v2 support, the recommended version is 5.10 or newer
 
+Issue:
+[WARNING SystemVerification]: kernel release 5.14.0-611.16.1.el9_7.x86_64 is unsupported. Supported LTS versions from the 5.x series are 5.4, 5.10 and 5.15. Any 6.x version is also supported. For cgroups v2 support, the recommended version is 5.10 or newer
+
+Resolution:
+sudo dnf install http://www.elrepo.org/elrepo-release-9.el9.noarch.rpm -y
+sudo dnf --enablerepo="elrepo-kernel" list available | grep kernel
+sudo dnf --enablerepo="elrepo-kernel" install kernel-ml
+sudo dnf list installed kernel*
+uname -r
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
+!!! If you node has 2 ip addresses public and pivate you need to install dnsmasq !!!
+sudo dnf install dnsmasq -y
+echo -en "address=/master-1/192.168.82.2\\naddress=/worker-1/192.168.82.5" | sudo tee -a /etc/dnsmasq.conf 
+
+sudo systemctl start dnsmasq
+sudo systemctl enable dnsmasq
+
+# create file local and add nameserver
+sudo mkdir root:root /etc/resolv.conf.d
+echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf.d/local
+sudo chown root:root  /etc/resolv.conf.d/local
+sudo chmod 644  /etc/resolv.conf.d/local
+sudo systemctl restart NetworkManager
+
+!!! after settings above utility "host" still will ingnore file /etc/hosts and will use file /etc/resolv.conf
+so you need to add your own dnsmanq to /etc/resolv.conf (do not edit manualy, it managed by NetworkManager)
+do settings below:
+
+# check your interfaces
+nmcli connection show --active
+NAME                UUID                                  TYPE      DEVICE
+System eth0         5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  ethernet  eth0
+Wired connection 1  43a177d0-cd70-3e4c-b755-72dce7e2351c  ethernet  eth1
+# switch off auto-dns from your cloud provider
+sudo nmcli connection modify "System eth0" ipv4.ignore-auto-dns yes
+sudo nmcli connection modify "Wired connection 1" ipv4.ignore-auto-dns yes
+
+
+# worker node 
+echo "nameserver 192.168.82.2" | sudo tee /etc/resolv.conf.d/local
+sudo systemctl restart NetworkManager
 
 
 
