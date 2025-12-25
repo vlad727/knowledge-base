@@ -291,6 +291,9 @@ pool ru.pool.ntp.org iburst
 # set time zone
 sudo timedatectl set-timezone Europe/Moscow
 
+# get all stings/line from file which one not empty and not start with #
+cat /etc/crio/crio.conf | grep -v '^$' | grep -v '^#'
+Когда мы объединяем эти два символа подряд (^$), это фактически означает "строку, которая начинается и сразу заканчивается", то есть пустую строку.
 
 
    
