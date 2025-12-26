@@ -445,7 +445,7 @@ sudo cat /etc/crio/crio.conf | grep cgroup
 conmon_cgroup = "pod"
 cgroup_manager = "systemd"
 
-# final crio.conf from master-1 node
+!!! ### final crio.conf from master-1 node ### <<< main configuration for crio.conf 
 cat  /etc/crio/crio.conf
 [crio]
 # Основные пути
