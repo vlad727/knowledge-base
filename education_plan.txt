@@ -1,0 +1,5 @@
+1. Kubernetes installation with different container runtimes (CRIO, container-d)
+2. Use different sdn Cilium, Flannel, Calico etc.
+3. May be terraform and ansible + cloud init
+4. Git main question + Gitlab CI
+5. 
