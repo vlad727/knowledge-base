@@ -1,10 +1,10 @@
 # Main description for test k8s cluster  
-1 master node  + 1 worker node 
+1 master node  + 1 worker node 2CPU/2RAM
 Kubernetes version 1.35
 Container runtime - crio version 1.28
-Cni - cilium 
+Cni - cilium  version 1.18.4
 Ingress Controllers  - nginx or gateway api
-Cluster OS - rpm based distrib
+Cluster OS - rpm based distrib Almalinux 9.5
 
 Note:
 Before installation, check capabilty kernel version and kubernetes, also container runtime too
