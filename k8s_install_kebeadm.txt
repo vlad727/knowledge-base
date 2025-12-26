@@ -1,8 +1,8 @@
 # Main description for test k8s cluster  
-1 master node  + 1 worker node
-Kubernetes version 1.30
-Container runtime - crio
-Cni - cilium
+1 master node  + 1 worker node 
+Kubernetes version 1.35
+Container runtime - crio version 1.28
+Cni - cilium 
 Ingress Controllers  - nginx or gateway api
 Cluster OS - rpm based distrib
 
