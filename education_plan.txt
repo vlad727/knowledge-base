@@ -32,3 +32,186 @@
 - Disaster Recovery strategies
 - Load Balancing techniques (Ingress Controllers, External LBs)
 - Autoscaling mechanisms (HPA, VPA)
+
+########################################################################################################################################################
+1. Углубление в Kubernetes (L4–L5)
+Продвинутая сетевая модель:
+
+Service Mesh (Istio, Linkerd) — трассировка, mTLS, canary‑релизы, fault injection.
+
+Cilium/Calico — сетевая политика, eBPF, L7‑фильтрация.
+
+Gateway API (вместо Ingress v1beta1).
+
+Безопасность кластера:
+
+Pod Security Standards (PSP → PSA).
+
+OPA Gatekeeper (политики через Rego).
+
+Audit Policy + Falco/Sysdig для обнаружения аномалий.
+
+Масштабирование и отказоустойчивость:
+
+Horizontal Pod Autoscaler (HPA) + Custom Metrics Server.
+
+Cluster Autoscaler + node pools с разными instance types.
+
+Multi‑cluster management (Cluster API, Rancher).
+
+2. CI/CD и GitOps — переход к «платформенной» экспертизе
+GitLab CI:
+
+Динамические пайплайны (CI/CD as Code).
+
+Интеграция с Argo CD (push‑based delivery).
+
+Security Scanning в пайплайнах (SAST/DAST, container scanning).
+
+Argo CD:
+
+App of Apps pattern.
+
+Sync Waves, Health Checks, Post‑sync hooks.
+
+Argo Rollouts (продвинутые стратегии деплоя: blue‑green, canary).
+
+Альтернативы: FluxCD, Tekton.
+
+3. Управление артефактами и репозиториями
+Harbor:
+
+Replication между инстансами.
+
+Vulnerability Scanning (Trivy).
+
+Content Trust (Notary).
+
+OCI‑репозитории:
+
+Distribution‑spec, OCI‑артефакты (Helm charts, OPA policies).
+
+Harbor + ChartMuseum.
+
+4. Observability и мониторинг (L4)
+Prometheus + Grafana:
+
+Recording rules, alerting on SLOs.
+
+Kubernetes‑specific dashboards (kube‑state‑metrics, cAdvisor).
+
+Loki/ELK:
+
+Логирование по меткам (labels), структурированные логи.
+
+OpenTelemetry:
+
+Distributed tracing (Jaeger/Tempo).
+
+Metrics + logs + traces в едином стеке.
+
+SLI/SLO/Error Budget:
+
+Настройка SLO‑панелей (Grafana SLO Dashboard).
+
+5. Cloud‑Native Security
+Kubernetes Security:
+
+Kyverno (политики вместо PSP).
+
+Kubescape/Kube‑bench для аудита.
+
+Secrets Management:
+
+HashiCorp Vault + CSI Driver.
+
+Sealed Secrets.
+
+Image Scanning:
+
+Clair, Trivy, Docker Bench.
+
+Runtime Security:
+
+Falco, Sysdig Secure.
+
+6. Automation и Infrastructure as Code (IaC)
+Terraform:
+
+Модули для Kubernetes (GKE/EKS/AKS).
+
+State management (backend S3/GCS).
+
+Ansible:
+
+Роли для bootstrap‑нод, настройки CNI/CSI.
+
+Crossplane:
+
+Управление облачными ресурсами через Kubernetes API.
+
+7. Golang — переход к production‑grade инструментам
+CLI‑утилиты для Kubernetes:
+
+Использование client-go, controller-runtime.
+
+Генерация CRD + операторов (kubebuilder/operator-sdk).
+
+Микросервисы:
+
+Gin/Echo + OpenTelemetry.
+
+Работа с etcd/Consul.
+
+Тестирование:
+
+Unit‑тесты, testify, ginkgo.
+
+E2E‑тесты (kind + kubetest2).
+
+8. Soft Skills и процессы
+Incident Management:
+
+On‑call rotation, post‑mortem (Blameless Culture).
+
+Documentation:
+
+Runbooks в Markdown/Confluence.
+
+Diagrams (Mermaid, Draw.io).
+
+Mentoring:
+
+Обучение Junior‑инженеров.
+
+План действий на 6–12 месяцев
+3 месяца: углубиться в Istio/Linkerd + Argo Rollouts.
+
+3 месяца: освоить OpenTelemetry + SLO‑мониторинг.
+
+3 месяца: написать Kubernetes‑оператор на Golang (например, для управления кастомными ресурсами).
+
+3 месяца: внедрить Vault + Sealed Secrets в кластер.
+
+Ресурсы для обучения
+Книги:
+
+Kubernetes: Up and Running (O’Reilly).
+
+Designing Data‑Intensive Applications (Martin Kleppmann) — для понимания распределённых систем.
+
+Сертификации:
+
+CKA (Certified Kubernetes Administrator).
+
+CKAD (Developer).
+
+Istio Certified.
+
+Практикум:
+
+Katacoda (interactive labs).
+
+GitHub: разберите open‑source операторы (например, cert‑manager).
+
+Итог: фокус на security, observability, automation и deep‑Kubernetes — это путь к Senior/Staff DevOps.
