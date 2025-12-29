@@ -3,3 +3,32 @@
 3. May be terraform and ansible + cloud init
 4. Git main question + Gitlab CI
 5. 
+
+- Механизмы работы контроллеров (Controller Manager)
+- Внутренняя работа kubelet и kube-apiserver
+- Принцип взаимодействия компонентов системы через etcd
+- Основы проектирования операторов (Operators)
+- Advanced RBAC (Role-Based Access Control)
+- Custom Resource Definitions (CRDs)
+- Helm Charts (создание собственных шаблонов развертывания)
+- Advanced Monitoring & Logging (Prometheus, Grafana, ELK Stack)
+- Troubleshooting production issues (работа с логами, метриками, профилирование производительности)
+- StatefulSets vs DaemonSets
+- Persistent Volumes и Storage Classes
+- Управление базой данных в Kubernetes (PostgreSQL, MySQL, MongoDB etc.)
+- Istio, Linkerd, Consul Connect
+- Service Mesh Design Patterns
+- A/B Testing, Canary Deployments, Blue-Green Deployments
+- Traffic Splitting & Routing
+- Продвинутые сценарии GitLab CI/CD
+- Argo CD + GitOps workflows
+- Jenkins X / Tekton
+- Multi-cluster deployments with tools like FluxCD or Kustomize
+- Pod Security Policies (PSP)
+- Network Policy
+- Secrets Management (Vault, SealedSecrets)
+- Audit Logs и события безопасности
+- High Availability setups for control plane components
+- Disaster Recovery strategies
+- Load Balancing techniques (Ingress Controllers, External LBs)
+- Autoscaling mechanisms (HPA, VPA)
