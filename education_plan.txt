@@ -1,8 +1,8 @@
 1. Kubernetes installation with different container runtimes (CRIO, container-d)
 2. Use different sdn Cilium, Flannel, Calico etc.
-3. May be terraform and ansible + cloud init
-4. Git main question + Gitlab CI
-5. 
+3. Terraform and ansible + cloud init
+4. Git - main question + Gitlab CI
+5. Operators + CRDs
 
 - Механизмы работы контроллеров (Controller Manager)
 - Внутренняя работа kubelet и kube-apiserver
