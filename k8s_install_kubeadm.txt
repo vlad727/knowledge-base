@@ -503,4 +503,20 @@ metrics_port = 9537
 1. kubeadm init can't resolve hostname for master node -> resolution, use dnsmasq, switch off ipv6
 2. another error crio does not create containers -> resolution change settings for crio.conf
 3. 
-   
+
+
+################################################################################################################################
+# Calico traffic flow 
+Под A (10.244.1.10) 
+ └──→ veth → root namespace (node-1)
+      └──→ cali-интерфейс → eth0 (node-1)
+           └──→ Сеть (L3) → eth0 (node-2)
+                └──→ cali-интерфейс → root namespace (node-2)
+                     └──→ veth → Под B (10.244.2.20)
+
+Пакет с src=10.244.1.10, dst=10.244.2.20 идёт через L3‑сеть (маршрутизаторы/коммутаторы) к node-2.
+BGP‑роутеры (или сетевые устройства) знают маршрут до 10.244.2.0/24 через node-2.
+BGP Router (Bird)
+Распространяет маршруты между нодами через BGP (или использует VXLAN/Geneve в overlay‑режиме).
+Позволяет нодам «знать» IP‑адреса подов на других нодах.
+################################################################################################################################
