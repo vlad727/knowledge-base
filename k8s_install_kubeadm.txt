@@ -134,6 +134,7 @@ net.ipv6.conf.default.disable_ipv6 = 1
 9.
 ### Add repos k8s and crio
 #### link with repo examples https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/change-package-repository/
+### https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl <<< official k8s repo for rpm-based os
 
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
