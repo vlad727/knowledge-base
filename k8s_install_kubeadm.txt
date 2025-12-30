@@ -13,6 +13,7 @@ KUBERNETES_VERSION=v1.32
 CRIO_VERSION=v1.32
 
 ## Links with manuals
+## https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 ## https://www.youtube.com/watch?v=Vw0c3ZaR9uI
 ## https://blog.andreev.it/2023/10/install-kubernetes-with-cri-o-and-cilium-on-rocky-linux-9/
 ## https://vaiti.io/kak-ustanovit-klaster-kubernetes-s-cri-o-v-kachestve-container-engine/
