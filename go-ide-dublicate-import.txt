@@ -29,3 +29,5 @@ go mod edit -droprequire github.com/Masterminds/semver/v3@latest
 go clean -modcache
 ## Download required dependences
 go mod download
+## Add import and fix dependences
+"github.com/blang/semver/v4"
