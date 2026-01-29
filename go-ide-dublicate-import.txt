@@ -1,0 +1,31 @@
+# Issue:
+## Code containe 2 import semver/v3 and semver/v4   
+package main
+
+import (
+	"fmt"
+	"github.com/Masterminds/semver/v3"
+	"github.com/blang/semver/v4"
+	"os"
+	"regexp"
+	"strings"
+)
+
+func main() {
+
+	// get tags from env
+	tagsFromPodman := os.Getenv("TAGS")
+	if mainCheckTags(tagsFromPodman) {
+		// exit with code 1 and end job
+		os.Exit(1)
+	}
+
+}
+# Resolution:
+## Delete import with go mod edit
+go mod edit -droprequire github.com/Masterminds/semver/v3@latest
+## Edit go.mod file delete github.com/Masterminds/semver/v3
+## Clean cache
+go clean -modcache
+## Download required dependences
+go mod download
