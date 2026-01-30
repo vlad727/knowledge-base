@@ -1,0 +1,7 @@
+How to sed
+"sed -i"   in place, without create temporary file
+"s/../../" standard change operation for sed (word "targetRevision" change to "targetRevision" + $CHART_VER)
+".*"       any number of characters
+''         everything inside single quotes remains untouched and literal, example: echo '$HOME' output will be $HOME, not home directory!!
+# our command contain three parts, first part 's/tag: .*/tag: ' second part "$TAG" and third part '/' 
+# full command will be: sed -i 's/tag: .*/tag: '"$TAG"'/' ./applicationset.yaml
