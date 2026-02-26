@@ -1,0 +1,68 @@
+# What is runtimeclass?
+Runtime Class в Kubernetes представляет собой механизм управления и настройки среды исполнения контейнеров (runtime). 
+Этот объект позволяет гибко настраивать и выбирать конкретные реализации runtime, используемые для запуска pod'ов.
+
+# About gVisor
+Cпециализированный gVisor для повышения безопасности
+
+# How to runtimeclass
+Без RuntimeClass Все ваши POD’ы автоматически используют стандартный runtime вашего кластера (обычно Docker).
+С RuntimeClass: Вы можете индивидуально указать какому POD-у какую среду исполнения использовать. 
+Скажем, у вас есть приложение, которое требует дополнительной изоляции и безопасности — тогда вы создаете специальный runtime 
+class, привязанный к secure runtime (например, gVisor), и назначаете его этому приложению
+
+1. Простое web-приложение Nginx (без особых требований к безопасности)
+2. Важное финансовое приложение (требует повышенной защиты)
+
+Вы хотите запустить первое приложение стандартным способом, а второе — в безопасной песочнице с дополнительным уровнем изоляции.
+
+Создаем две runtime classes:
+
+YAML
+
+# Standard runtime (Docker)
+apiVersion: node.k8s.io/v1beta1
+kind: RuntimeClass
+metadata:
+  name: standard-docker
+handler: docker-runc
+YAML
+
+# Secure runtime (gVisor)
+apiVersion: node.k8s.io/v1beta1
+kind: RuntimeClass
+metadata:
+  name: secure-gvisor
+handler: gvisor-runsc
+Теперь мы можем создать два POD’a:
+
+YAML
+
+# Обычный веб-сервер
+apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-web-server
+spec:
+  containers:
+  - name: nginx
+    image: nginx:alpine
+  runtimeClassName: standard-docker
+YAML
+
+# Финансовое приложение с повышенным уровнем безопасности
+apiVersion: v1
+kind: Pod
+metadata:
+  name: financial-app
+spec:
+  containers:
+  - name: app
+    image: my-financial-app:v1
+  runtimeClassName: secure-gvisor
+
+Итог:
+- Web-сервер запущен обычным Docker-ом.
+- Финансовое приложение запущено безопасным runtime-ом gVisor.
+
+Задать runtime class нужно, если требуется особая среда исполнения или повышенная безопасность для pod'а
