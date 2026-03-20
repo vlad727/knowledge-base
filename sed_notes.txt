@@ -1,7 +1,18 @@
-How to sed
+# How to sed
 "sed -i"   in place, without create temporary file
 "s/../../" standard change operation for sed (word "targetRevision" change to "targetRevision" + $CHART_VER)
 ".*"       any number of characters
 ''         everything inside single quotes remains untouched and literal, example: echo '$HOME' output will be $HOME, not home directory!!
 # our command contain three parts, first part 's/tag: .*/tag: ' second part "$TAG" and third part '/' 
 # full command will be: sed -i 's/tag: .*/tag: '"$TAG"'/' ./applicationset.yaml
+
+# Удалять третью строку:
+sed '3d' file.txt
+# Удалять определённый диапазон строк (например, с 2-й по 5-ю):
+sed '2,5d' file.txt
+# Удалять последнюю строку:
+sed '$d' file.txt
+# Убрать все пустые строки:
+sed '/^$/d' file.txt
+# Example how to delete  "NAME" and "AGE" for kubectl output
+k get backups -n velero | sed '1d'
