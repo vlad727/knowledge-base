@@ -1,0 +1,43 @@
+package main
+
+import "fmt"
+
+// Функция пытается изменить строку
+func tryToChange(someString string) {
+    someString = "Новое значение"
+    fmt.Println("Внутри функции:", someString)
+}
+
+func main() {
+    myVar := "Старое значение"
+    tryToChange(myVar)
+    fmt.Println("Вне функции:", myVar)
+}
+
+Внутри функции: Новое значение
+Вне функции: Старое значение
+
+package main
+
+import "fmt"
+
+// 1. Функция принимает УКАЗАТЕЛЬ на строку (*string)
+func tryToChange(someString *string) {
+    // 3. Используем * для изменения значения по адресу
+    *someString = "Новое значение"
+    fmt.Println("Внутри функции:", *someString)
+}
+
+func main() {
+    myVar := "Старое значение"
+    fmt.Println("До вызова функции:", myVar)
+
+    // 2. Передаем АДРЕС переменной (&myVar)
+    tryToChange(&myVar)
+
+    fmt.Println("После вызова функции:", myVar)
+}
+
+До вызова функции: Старое значение
+Внутри функции: Новое значение
+После вызова функции: Новое значение
